@@ -4,7 +4,7 @@
     <div class="main-header__container container">
       <img class="main-header__logo" src="./assets/tank_icon.png" width="62" height="62" alt="App logo">
       <h1 class="page-header__title">App Name</h1>
-      <div class="logout__container">
+      <div class="logout-container">
         <button class="logout__btn">Logout</button>
         <span class="logout__span" id="username">{{message}}</span>
       </div>
@@ -17,13 +17,13 @@
     </header>
     <main class="page-main">
       <div class="page-main__container container">
-        <section class="units">
-          <h2 class="visually-hidden">Units</h2>
+        <section class="units-data">
+          <indicators></indicators>
+          <List :people="people"></List>
 
-          <!-- Сортировка -->
+        </section>
+        <section class="fuel">
 
-          <!-- Контент -->
-          <List></List>
         </section>
       </div>
     </main>
@@ -33,19 +33,23 @@
 
 <script>
 import List from './components/List'
+import Indicators from './components/Indicators'
 
 
 export default {
   components: {
-    'List': List
+    'List': List,
+    'Indicators': Indicators
   },
   data () {
     return {
       title: `My application`,
-      message: `username`
+      message: `username`,
+      people: [`Nissan`, `Volvo`, `Aston-Martin`, `BMV`, `Tesla`, `Ford`]
     }
   }
 }
+
 </script>
 
 <style>
@@ -95,7 +99,7 @@ ul {
   text-shadow: gray 2px 3px 4px;
 }
 
-.logout__container {
+.logout-container {
   margin-left: auto;
 }
 

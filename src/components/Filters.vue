@@ -12,7 +12,7 @@
 
             <div class="unit-filters__filter">
               <input id="filter-filter2" class="unit-filters__filter-input  visually-hidden" type="radio" name="unit-filter" value="filter2">
-              <label class="trip-filters__filter-label" for="filter-past">Filter2</label>
+              <label class="unit-filters__filter-label" for="ffilter-filter2">Filter2</label>
             </div>
 
             <button class="visually-hidden" type="submit">Accept filter</button>
@@ -30,7 +30,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
   .unit-filters {
   display: flex;
   padding-top: 10px;

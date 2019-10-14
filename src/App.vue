@@ -18,13 +18,14 @@
     <main class="page-main">
       <div class="page-main__container container">
         <section class="units-data">
-          <indicators></indicators>
+          <Indicators></Indicators>
           <List :people="people"></List>
 
         </section>
         <section class="fuel">
 
         </section>
+        <Login></Login>
       </div>
     </main>
 
@@ -34,12 +35,14 @@
 <script>
 import List from './components/List'
 import Indicators from './components/Indicators'
+import Login from './components/Login'
 
 
 export default {
   components: {
     'List': List,
-    'Indicators': Indicators
+    'Indicators': Indicators,
+    'Login': Login
   },
   data () {
     return {

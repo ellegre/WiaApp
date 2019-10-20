@@ -1,15 +1,14 @@
 <template>
-  <div class="general-container">
+  <div v-if="token" class="general-container">
     <header class="main-header">
     <div class="main-header__container container">
       <img class="main-header__logo" src="./assets/tank_icon.png" width="62" height="62" alt="App logo">
       <h1 class="page-header__title">App Name</h1>
       <div class="logout-container">
         <button class="logout__btn">Logout</button>
-        <span class="logout__span" id="username">{{message}}</span>
+        <span class="logout__span" id="username">{{user.name || `Nobody`}}</span>
       </div>
       <div class="main-header__content">
-
         <Filters></Filters>
         <Menu></Menu>
       </div>
@@ -23,32 +22,83 @@
 
         </section>
         <section class="fuel">
+          <Table></Table>
 
         </section>
-        <Login></Login>
       </div>
     </main>
-
+  <table v-if="objects.length">
+    <tr v-for="object in objects">
+      <td>{{object.name}}</td>
+      <td>{{object.position}}</td>
+    </tr>
+  </table>
   </div>
+  <Auth v-else v-bind:onSuccess="updateToken"></Auth>
 </template>
 
 <script>
 import List from './components/List'
 import Indicators from './components/Indicators'
-import Login from './components/Login'
+//import Login from './components/Login'
+import Table from './components/Table'
+import Auth from './components/Auth'
 
+const session = wialon.core.Session.getInstance();
+session.initSession('https://hst-api.wialon.com');
 
 export default {
   components: {
     'List': List,
     'Indicators': Indicators,
-    'Login': Login
+    'Auth': Auth,
+    'Table': Table
   },
   data () {
     return {
+      token: null,
+      user: {
+        name: null
+      },
+      objects: [],
       title: `My application`,
       message: `username`,
-      people: [`Nissan`, `Volvo`, `Aston-Martin`, `BMV`, `Tesla`, `Ford`]
+      people: [`Nissan`, `Volvo`, `Aston-Martin`, `BMV`, `Tesla`, `Ford`],
+      employee: [
+          { age: 40, first_name: 'Dickerson', last_name: 'Macdonald' },
+          { age: 21, first_name: 'Larsen', last_name: 'Shaw' },
+          { age: 89, first_name: 'Geneva', last_name: 'Wilson' },
+          { age: 38, first_name: 'Jami', last_name: 'Carney' }
+        ]
+     }
+  },
+  methods: {
+    updateToken(token) {
+      this.token = token;
+
+      session.loginToken(token, (code) => {
+        const user = session.getCurrUser();
+        this.user.name = user.getName();
+        this.showObjects();
+      });
+    },
+    showObjects(){
+      const searchSpec = {
+      itemsType:"avl_unit", // тип искомых элементов системы Wialon
+      propName: "sys_name", // имя свойства, по которому будет осуществляться поиск
+      propValueMask: "*",   // значение свойства — могут быть использованы * | , > < =
+      sortType: "sys_name"  // имя свойства, по которому будет осуществляться сортировка ответа
+    };
+      const dataFlags = wialon.item.Item.dataFlag.base |        // флаг базовых свойств
+                      wialon.item.Unit.dataFlag.lastMessage;  // флаг данных последнего сообщения
+
+      // запрос поиска объектов
+      session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
+        this.objects = data.items.map(elem => ({
+          position: elem.getPosition(),
+          name: elem.getName()
+        }))
+      });
     }
   }
 }
@@ -129,6 +179,10 @@ ul {
 .main-header__content {
   width: 100%;
 
+}
+
+.fuel {
+  background-color: white;
 }
 
 .visually-hidden {

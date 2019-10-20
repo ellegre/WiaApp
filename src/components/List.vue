@@ -1,8 +1,10 @@
 <template>
   <div class="units__container">
     <ul class="units__list">
+
       <li  v-for="person in people">
-        {{person}}
+       {{person}}
+
       </li>
     </ul>
     <span class="units__span">Всего объектов: {{getTotalCount}}</span>
@@ -16,8 +18,13 @@ export default {
       type: Array,
       required: false,
       dafault: []
-    }
-  },
+    },
+    employee: {
+      type: Array,
+      required: false,
+      dafault: []
+  }
+},
   data () {
     return {
 
@@ -29,6 +36,7 @@ export default {
       return this.people.length;
     }
   }
+
 }
 </script>
 

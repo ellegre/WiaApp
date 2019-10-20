@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script>
+    const [, token] = window.location.search.match(/access_token=([0-9a-fA-F]+)/);
+    window.parent.updateToken(token);
+  </script>
+</head>
+<body>
+
+</body>
+</html>

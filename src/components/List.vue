@@ -1,12 +1,13 @@
 <template>
   <div class="units__container">
-    <ul class="units__list">
 
-      <li  v-for="person in people">
-       {{person}}
+    <table v-if="objects.length">
+      <tr v-for="object in objects">
+        <td>{{object.name}}</td>
+        <td>{{object.position}}</td>
+      </tr>
+    </table>
 
-      </li>
-    </ul>
     <span class="units__span">Всего объектов: {{getTotalCount}}</span>
   </div>
 </template>
@@ -14,30 +15,26 @@
 <script>
 export default {
   props: {
-    people: {
+    objects: {
       type: Array,
       required: false,
       dafault: []
-    },
-    employee: {
-      type: Array,
-      required: false,
-      dafault: []
-  }
-},
+    }
+  },
   data () {
     return {
-
-
     }
   },
   computed: {
     getTotalCount: function () {
-      return this.people.length;
+      return this.objects.length;
     }
-  }
+  },
+  methods: {
 
+  }
 }
+
 </script>
 
 <style>

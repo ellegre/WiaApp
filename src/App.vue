@@ -18,7 +18,7 @@
       <div class="page-main__container container">
         <section class="units-data">
           <Indicators></Indicators>
-          <List :people="people"></List>
+          <List :objects="objects"></List>
 
         </section>
         <section class="fuel">
@@ -27,12 +27,6 @@
         </section>
       </div>
     </main>
-  <table v-if="objects.length">
-    <tr v-for="object in objects">
-      <td>{{object.name}}</td>
-      <td>{{object.position}}</td>
-    </tr>
-  </table>
   </div>
   <Auth v-else v-bind:onSuccess="updateToken"></Auth>
 </template>
@@ -40,12 +34,12 @@
 <script>
 import List from './components/List'
 import Indicators from './components/Indicators'
-//import Login from './components/Login'
 import Table from './components/Table'
 import Auth from './components/Auth'
 
 const session = wialon.core.Session.getInstance();
 session.initSession('https://hst-api.wialon.com');
+
 
 export default {
   components: {
@@ -60,17 +54,8 @@ export default {
       user: {
         name: null
       },
-      objects: [],
-      title: `My application`,
-      message: `username`,
-      people: [`Nissan`, `Volvo`, `Aston-Martin`, `BMV`, `Tesla`, `Ford`],
-      employee: [
-          { age: 40, first_name: 'Dickerson', last_name: 'Macdonald' },
-          { age: 21, first_name: 'Larsen', last_name: 'Shaw' },
-          { age: 89, first_name: 'Geneva', last_name: 'Wilson' },
-          { age: 38, first_name: 'Jami', last_name: 'Carney' }
-        ]
-     }
+      objects: []
+    }
   },
   methods: {
     updateToken(token) {
@@ -80,6 +65,7 @@ export default {
         const user = session.getCurrUser();
         this.user.name = user.getName();
         this.showObjects();
+
       });
     },
     showObjects(){
@@ -102,7 +88,7 @@ export default {
     }
   }
 }
-
+ console.log(data);
 </script>
 
 <style>

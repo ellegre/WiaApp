@@ -19,13 +19,12 @@
     },
     created(){
       window.updateToken = this.updateToken;
-      console.log(window.updateToken)
     }
   }
 </script>
 <style scoped>
   iframe {
     width: 600px;
-    height: 400px;
+    height: 440px;
   }
 </style>

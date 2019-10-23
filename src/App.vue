@@ -39,6 +39,8 @@ import Auth from './components/Auth'
 
 const session = wialon.core.Session.getInstance();
 session.initSession('https://hst-api.wialon.com');
+session.loadLibrary("itemIcon");
+
 
 
 export default {
@@ -52,9 +54,13 @@ export default {
     return {
       token: null,
       user: {
-        name: null
+        name: null,
+        position: {
+           t: null
+        }
       },
-      objects: []
+      objects: [],
+      feature: []
     }
   },
   methods: {
@@ -65,30 +71,35 @@ export default {
         const user = session.getCurrUser();
         this.user.name = user.getName();
         this.showObjects();
-
+        const feature = session.getFeatures();
+        console.log(feature)
       });
     },
     showObjects(){
       const searchSpec = {
-      itemsType:"avl_unit", // тип искомых элементов системы Wialon
-      propName: "sys_name", // имя свойства, по которому будет осуществляться поиск
-      propValueMask: "*",   // значение свойства — могут быть использованы * | , > < =
-      sortType: "sys_name"  // имя свойства, по которому будет осуществляться сортировка ответа
+        itemsType:"avl_unit", // тип искомых элементов системы Wialon
+        propName: "sys_name", // имя свойства, по которому будет осуществляться поиск
+        propValueMask: "*",   // значение свойства — могут быть использованы * | , > < =
+        sortType: "sys_name"  // имя свойства, по которому будет осуществляться сортировка ответа
     };
       const dataFlags = wialon.item.Item.dataFlag.base |        // флаг базовых свойств
                       wialon.item.Unit.dataFlag.lastMessage;  // флаг данных последнего сообщения
 
       // запрос поиска объектов
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
+        console.log(data);
         this.objects = data.items.map(elem => ({
           position: elem.getPosition(),
-          name: elem.getName()
+
+          name: elem.getName(),
+          id: elem.getId(),
+          icon: elem.getIconUrl()
         }))
       });
     }
   }
 }
- console.log(data);
+
 </script>
 
 <style>
@@ -99,7 +110,6 @@ export default {
   height: 100%;
   color: #333;
   font-size: 18px;
-  background-color: #D8D8D8;
   font-family: Comic Sans MS;
 }
 

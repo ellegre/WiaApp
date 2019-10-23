@@ -1,10 +1,18 @@
 <template>
   <div class="units__container">
 
-    <table v-if="objects.length">
+    <table class="units__table" v-if="objects.length">
+      <tr>
+        <th></th>
+        <th>Имя объекта</th>
+        <th>Координаты</th>
+        <th>Id</th>
+      </tr>
       <tr v-for="object in objects">
-        <td>{{object.name}}</td>
+        <td class="cols-1"><img v-bind:src="object.icon"></td>
+        <td class="cols-3">{{object.name}}</td>
         <td>{{object.position}}</td>
+        <td>{{object.id}}</td>
       </tr>
     </table>
 
@@ -40,5 +48,14 @@ export default {
 <style>
   .units__span {
     color: red;
+  }
+  .units__table {
+
+  }
+  .cols-1 {
+    width: 10%;
+  }
+  .cols-3 {
+    width: 30%;
   }
 </style>

@@ -54,10 +54,7 @@ export default {
     return {
       token: null,
       user: {
-        name: null,
-        position: {
-           t: null
-        }
+        name: null
       },
       objects: [],
       feature: []
@@ -89,8 +86,8 @@ export default {
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
         console.log(data);
         this.objects = data.items.map(elem => ({
-          position: elem.getPosition(),
-
+          position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
+          speed: elem.getPosition()? elem.getPosition().s: "нет данных",
           name: elem.getName(),
           id: elem.getId(),
           icon: elem.getIconUrl()

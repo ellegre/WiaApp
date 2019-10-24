@@ -5,14 +5,17 @@
       <tr>
         <th></th>
         <th>Имя объекта</th>
-        <th>Координаты</th>
+        <th>Последнее сообщение</th>
         <th>Id</th>
+        <th>Скорость</th>
       </tr>
       <tr v-for="object in objects">
         <td class="cols-1"><img v-bind:src="object.icon"></td>
         <td class="cols-3">{{object.name}}</td>
         <td>{{object.position}}</td>
         <td>{{object.id}}</td>
+        <td>{{object.speed}}</td>
+        <td>{{object.address}}</td>
       </tr>
     </table>
 

@@ -40,6 +40,7 @@ import Auth from './components/Auth'
 const session = wialon.core.Session.getInstance();
 session.initSession('https://hst-api.wialon.com');
 session.loadLibrary("itemIcon");
+session.loadLibrary("unitSensors");
 
 
 
@@ -57,7 +58,8 @@ export default {
         name: null
       },
       objects: [],
-      feature: []
+      feature: [],
+
     }
   },
   methods: {
@@ -65,11 +67,14 @@ export default {
       this.token = token;
 
       session.loginToken(token, (code) => {
-        const user = session.getCurrUser();
-        this.user.name = user.getName();
-        this.showObjects();
-        const feature = session.getFeatures();
+        const user = session.getCurrUser()
+        this.user.name = user.getName()
+        this.showObjects()
+        const feature = session.getFeatures()
         console.log(feature)
+        this.showMessages()
+
+
       });
     },
     showObjects(){
@@ -77,10 +82,11 @@ export default {
         itemsType:"avl_unit", // тип искомых элементов системы Wialon
         propName: "sys_name", // имя свойства, по которому будет осуществляться поиск
         propValueMask: "*",   // значение свойства — могут быть использованы * | , > < =
-        sortType: "sys_name"  // имя свойства, по которому будет осуществляться сортировка ответа
-    };
-      const dataFlags = wialon.item.Item.dataFlag.base |        // флаг базовых свойств
-                      wialon.item.Unit.dataFlag.lastMessage;  // флаг данных последнего сообщения
+        sortType: "!sys_id"  // имя свойства, по которому будет осуществляться сортировка ответа
+        };
+      const dataFlags = wialon.item.Item.dataFlag.base |
+                      wialon.item.Unit.dataFlag.sensors |        // флаг базовых свойств
+                      wialon.item.Unit.dataFlag.lastMessage  // флаг данных последнего сообщения
 
       // запрос поиска объектов
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
@@ -90,16 +96,46 @@ export default {
           speed: elem.getPosition()? elem.getPosition().s: "нет данных",
           name: elem.getName(),
           id: elem.getId(),
-          icon: elem.getIconUrl()
+          icon: elem.getIconUrl(),
+          sensor: elem.getSensors()
+
         }))
       });
+    },
+    showMessages() {
+      const flags = wialon.item.Item.dataFlag.base;
+        wialon.core.Session.getInstance().updateDataFlags( // load items to current session
+          [{type: "type", data: "avl_unit", flags: flags, mode: 0}], initData());
+      function initData () {
+        const units = session.getItems("avl_unit");
+        const to = session.getServerTime();
+        const from = to - 3600 + 24;
+        const unit = 12495637;
+        const ml = session.getMessagesLoader();
+        ml.loadInterval(unit, from, to, 0, 0, 100, (code, data) => {
+          console.log(data);
+        })
+      }
+    },
+    updateSensors() {
+
+      const unit = session.getItem();
+      const sens = unit.getSensors();
+      // calculate sensor value
+     const result = unit.calculateSensorValue(sens, unit.getLastMessage());
+
+      console.log(result)
+      // print result message
+      //msg("Value of "+ unit.getName() +" <b>'"+ sens.n +"'</b> sensor ("+ sens.t +"): "+ result + " ("+ sens.m +")");
+
     }
   }
 }
 
+
 </script>
 
-<style>
+<style scoped>
   html, body {
   margin: 0;
   padding: 0;

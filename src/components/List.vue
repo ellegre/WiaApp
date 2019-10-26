@@ -8,6 +8,7 @@
         <th>Последнее сообщение</th>
         <th>Id</th>
         <th>Скорость</th>
+        <th>Сенсоры</th>
       </tr>
       <tr v-for="object in objects">
         <td class="cols-1"><img v-bind:src="object.icon"></td>
@@ -16,6 +17,8 @@
         <td>{{object.id}}</td>
         <td>{{object.speed}}</td>
         <td>{{object.address}}</td>
+        <td>{{object.sensor}}</td>
+        <td>{{object.sensorres}}</td>
       </tr>
     </table>
 

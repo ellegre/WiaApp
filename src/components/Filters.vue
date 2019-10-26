@@ -46,5 +46,15 @@ export default {
 .unit-filters__filter:hover {
   color: #E6E6E6;
 }
+.visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+}
 
 </style>

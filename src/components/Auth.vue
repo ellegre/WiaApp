@@ -1,5 +1,5 @@
 <template>
-  <iframe v-once v-bind:src="src"></iframe>
+  <iframe class="wialon__form" v-once v-bind:src="src"></iframe>
 </template>
 <script>
   export default {
@@ -26,5 +26,9 @@
   iframe {
     width: 600px;
     height: 440px;
+  }
+
+  .wialon__form {
+    background-color: green;
   }
 </style>

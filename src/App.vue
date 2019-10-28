@@ -17,7 +17,6 @@
     <main class="page-main">
       <div class="page-main__container container">
         <section class="units-data">
-          <Indicators></Indicators>
           <List :objects="objects"></List>
 
         </section>
@@ -41,6 +40,7 @@ session.initSession('https://hst-api.wialon.com');
 session.loadLibrary("itemIcon");
 session.loadLibrary("unitSensors");
 
+const UPDATE_INTERVAL = 10000; //time interval to refresh data
 
 
 export default {
@@ -57,24 +57,34 @@ export default {
       },
       objects: [],
       feature: [],
-
     }
   },
   methods: {
     updateToken(token) {
       this.token = token;
-
       session.loginToken(token, (code) => {
         this.removeClass()
         const user = session.getCurrUser()
         this.user.name = user.getName()
-        this.showObjects()
         const feature = session.getFeatures()
         console.log(feature)
-        this.showMessages();
-
-
+        this.startAutoRefresh()
       });
+    },
+    startAutoRefresh(){
+      this.refresh();
+      if(!this.intervalId){
+        this.intervalId = setInterval(() => this.refresh(), UPDATE_INTERVAL);
+      }
+    },
+    stopAutoRefresh(){
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    },
+    refresh(){
+      console.log("refreshing...");
+      this.showObjects();
+      this.showMessages();
     },
     removeClass() {
       const body = document.querySelector('.body');

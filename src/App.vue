@@ -33,7 +33,6 @@
 
 <script>
 import List from './components/List'
-import Indicators from './components/Indicators'
 import Table from './components/Table'
 import Auth from './components/Auth'
 
@@ -47,7 +46,6 @@ session.loadLibrary("unitSensors");
 export default {
   components: {
     'List': List,
-    'Indicators': Indicators,
     'Auth': Auth,
     'Table': Table
   },
@@ -67,15 +65,20 @@ export default {
       this.token = token;
 
       session.loginToken(token, (code) => {
+        this.removeClass()
         const user = session.getCurrUser()
         this.user.name = user.getName()
         this.showObjects()
         const feature = session.getFeatures()
         console.log(feature)
-        this.showMessages()
+        this.showMessages();
 
 
       });
+    },
+    removeClass() {
+      const body = document.querySelector('.body');
+      body.classList.remove('body');
     },
     showObjects(){
       const searchSpec = {
@@ -95,7 +98,6 @@ export default {
           position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
           speed: elem.getPosition()? elem.getPosition().s: "нет данных",
           name: elem.getName(),
-          id: elem.getId(),
           icon: elem.getIconUrl(),
           sensor: elem.getSensors()
 
@@ -136,15 +138,6 @@ export default {
 </script>
 
 <style scoped>
-  html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  color: #333;
-  font-size: 18px;
-  font-family: Comic Sans MS;
-}
 
 ul {
   padding: 0;
@@ -153,7 +146,7 @@ ul {
 }
 
 .main-header {
-  background-color: #078ff0;;
+  background-color: #078ff0;
 }
 
 .main-header__container {
@@ -165,8 +158,7 @@ ul {
 }
 
 .container {
-  width: 1200px;
-  padding: 0 10px;
+  padding: 0 30px;
   margin: 0 auto;
 }
 
@@ -189,10 +181,11 @@ ul {
   background: linear-gradient(to bottom, #F2F2F2 0%, #E6E6E6 100%);
   font-weight: 500;
   font-size: 17px;
+  font-family: Comic Sans MS;
   line-height: 21px;
   font-family: inherit;
   border-radius: 15px;
-  padding: 8px;
+  padding: 5px;
 }
 
 .logout__btn:focus,
@@ -202,7 +195,10 @@ ul {
 }
 
 .logout__span {
+  margin-left: 5px;
   color: #fff;
+  font-family: Comic Sans MS;
+  font-size: 17px;
 }
 
 .main-header__content {

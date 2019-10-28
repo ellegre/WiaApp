@@ -3,22 +3,21 @@
 
     <table class="units__table" v-if="objects.length">
       <tr>
+        <th>#</th>
         <th></th>
         <th>Имя объекта</th>
         <th>Последнее сообщение</th>
-        <th>Id</th>
         <th>Скорость</th>
-        <th>Сенсоры</th>
+
       </tr>
-      <tr v-for="object in objects">
-        <td class="cols-1"><img v-bind:src="object.icon"></td>
-        <td class="cols-3">{{object.name}}</td>
+      <tr v-for="(object, index) in objects">
+        <td>{{index + 1}}</td>
+        <td><img v-bind:src="object.icon" width="25" height="25"></td>
+        <td>{{object.name}}</td>
         <td>{{object.position}}</td>
-        <td>{{object.id}}</td>
         <td>{{object.speed}}</td>
-        <td>{{object.address}}</td>
-        <td>{{object.sensor}}</td>
-        <td>{{object.sensorres}}</td>
+
+
       </tr>
     </table>
 
@@ -55,8 +54,14 @@ export default {
   .units__span {
     color: red;
   }
-  .units__table {
-
+  .units__table th {
+    color: #939699;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 5px;
+    font-weight: 400;
+    font-size: 16px;
+    text-align: left;
   }
   .cols-1 {
     width: 10%;
@@ -64,4 +69,5 @@ export default {
   .cols-3 {
     width: 30%;
   }
+
 </style>

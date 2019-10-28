@@ -24,11 +24,17 @@
 </script>
 <style scoped>
   iframe {
+    position: absolute;
+    content: "";
+    top: 50%;
+    left: 50%;
+    margin-left: -300px;
+    margin-top: -220px;
     width: 600px;
     height: 440px;
   }
 
   .wialon__form {
-    background-color: green;
+    background-color: #ebebeb;
   }
 </style>

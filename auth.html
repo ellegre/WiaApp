@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
-  <!--<link rel="stylesheet" type="text/css" href="/assets/css/style.css">-->
-
   <title>WiaApp</title>
 </head>
-<body class="auth-body">
+<body>
  <script>
     const [, token] = window.location.search.match(/access_token=([0-9a-fA-F]+)/);
     window.parent.updateToken(token);

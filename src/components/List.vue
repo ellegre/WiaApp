@@ -5,9 +5,9 @@
       <tr>
         <th>#</th>
         <th></th>
-        <th>Имя объекта</th>
-        <th>Последнее сообщение</th>
-        <th>Скорость</th>
+        <th>Name</th>
+        <th>Last message</th>
+        <th>Speed</th>
 
       </tr>
       <tr v-for="(object, index) in objects">
@@ -15,7 +15,10 @@
         <td><img v-bind:src="object.icon" width="25" height="25"></td>
         <td>{{object.name}}</td>
         <td>{{object.position}}</td>
-        <td>{{object.speed}}</td>
+        <td class="units__column">{{object.speed}}</td>
+        <td v-for="data in object.sensors">
+          {{(data.t)}}
+        </td>
 
 
       </tr>
@@ -63,6 +66,11 @@ export default {
     font-size: 16px;
     text-align: left;
   }
+
+  .units__column {
+    border-right: 1px solid black;
+  }
+
   .cols-1 {
     width: 10%;
   }

@@ -24,6 +24,7 @@
           <Table></Table>
 
         </section>
+        <Message></Message>
       </div>
     </main>
   </div>
@@ -34,20 +35,30 @@
 import List from './components/List'
 import Table from './components/Table'
 import Auth from './components/Auth'
+import Message from './components/Message'
 
 const session = wialon.core.Session.getInstance();
 session.initSession('https://hst-api.wialon.com');
 session.loadLibrary("itemIcon");
 session.loadLibrary("unitSensors");
 
-const UPDATE_INTERVAL = 10000; //time interval to refresh data
+const UPDATE_INTERVAL = 60000; //time interval to refresh data
+
+function msg(text) {
+  document.querySelector('.error-message').showErrorMessage(text);
+}
+
+function showErrorMessage(text) {
+
+}
 
 
 export default {
   components: {
     'List': List,
     'Auth': Auth,
-    'Table': Table
+    'Table': Table,
+    'Message': Message
   },
   data () {
     return {
@@ -103,15 +114,20 @@ export default {
 
       // запрос поиска объектов
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
+        if (code) {
+          msg(wialon.core.Errors.getErrorText(code));
+          return;
+        }
         console.log(data);
-        this.objects = data.items.map(elem => ({
-          position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
-          speed: elem.getPosition()? elem.getPosition().s: "нет данных",
-          name: elem.getName(),
-          icon: elem.getIconUrl(),
-          sensor: elem.getSensors()
-
-        }))
+        this.objects = data.items.map(elem => {
+          return {
+            position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
+            speed: elem.getPosition()? elem.getPosition().s: "нет данных",
+            name: elem.getName(),
+            icon: elem.getIconUrl(),
+            sensors: elem.getSensors()
+          }
+        })
       });
     },
     showMessages() {

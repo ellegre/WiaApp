@@ -28,6 +28,7 @@ export default {
 
 <style>
  .message {
+  display: none;
   width: 500px;
   height: 200px;
   padding: 20px;

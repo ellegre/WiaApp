@@ -8,6 +8,7 @@
         <th>Name</th>
         <th>Last message</th>
         <th>Speed</th>
+        <th>Number of sensors</th>
 
       </tr>
       <tr v-for="(object, index) in objects">
@@ -16,10 +17,12 @@
         <td>{{object.name}}</td>
         <td>{{object.position}}</td>
         <td class="units__column">{{object.speed}}</td>
+        <td>{{Object.keys(object.sensors).length}}</td>
         <td v-for="data in object.sensors">
-          {{(data.t)}}
-        </td>
 
+{{data.n}}
+
+        </td>
 
       </tr>
     </table>
@@ -45,12 +48,11 @@ export default {
     getTotalCount: function () {
       return this.objects.length;
     }
-  },
-  methods: {
-
   }
+
 }
 
+console.log(this.datas)
 </script>
 
 <style>
@@ -65,10 +67,11 @@ export default {
     font-weight: 400;
     font-size: 16px;
     text-align: left;
+    vertical-align: top;
   }
 
   .units__column {
-    border-right: 1px solid black;
+
   }
 
   .cols-1 {

@@ -125,11 +125,15 @@ export default {
             speed: elem.getPosition()? elem.getPosition().s: "нет данных",
             name: elem.getName(),
             icon: elem.getIconUrl(),
-            sensors: elem.getSensors()
+            sensors: elem.getSensors(),
+            id: elem.getId(),
+            sens: elem.getSensor(),
+            result: elem.calculateSensorValue(elem.getSensor(), elem.getLastMessage()),
           }
         })
       });
     },
+
     showMessages() {
       const flags = wialon.item.Item.dataFlag.base;
         wialon.core.Session.getInstance().updateDataFlags( // load items to current session

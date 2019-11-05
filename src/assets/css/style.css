@@ -21,3 +21,7 @@ body {
 #app {
   padding-bottom: 20px;
 }
+
+.show {
+  display: block;
+}

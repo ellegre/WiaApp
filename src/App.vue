@@ -5,7 +5,7 @@
       <img class="main-header__logo" src="./assets/tank_icon.png" width="62" height="62" alt="App logo">
       <h1 class="page-header__title">App Name</h1>
       <div class="logout-container">
-        <button class="logout__btn">Logout</button>
+        <button v-on:click="logout" class="logout__btn">Logout</button>
         <span class="logout__span" id="username">{{user.name || `Nobody`}}</span>
       </div>
       <div class="main-header__content">
@@ -41,16 +41,9 @@ const session = wialon.core.Session.getInstance();
 session.initSession('https://hst-api.wialon.com');
 session.loadLibrary("itemIcon");
 session.loadLibrary("unitSensors");
+session.loadLibrary("unitEvents");
 
 const UPDATE_INTERVAL = 60000; //time interval to refresh data
-
-function msg(text) {
-  document.querySelector('.error-message').showErrorMessage(text);
-}
-
-function showErrorMessage(text) {
-
-}
 
 
 export default {
@@ -101,6 +94,12 @@ export default {
       const body = document.querySelector('.body');
       body.classList.remove('body');
     },
+    showMessage(text) {
+        const message = document.querySelector(".message");
+        message.style.display = "block";
+        const textMessage = document.querySelector(".message__text");
+        textMessage.textContent = text;
+    },
     showObjects(){
       const searchSpec = {
         itemsType:"avl_unit", // тип искомых элементов системы Wialon
@@ -109,13 +108,13 @@ export default {
         sortType: "!sys_id"  // имя свойства, по которому будет осуществляться сортировка ответа
         };
       const dataFlags = wialon.item.Item.dataFlag.base |
-                      wialon.item.Unit.dataFlag.sensors |        // флаг базовых свойств
-                      wialon.item.Unit.dataFlag.lastMessage  // флаг данных последнего сообщения
+                      wialon.item.Unit.dataFlag.sensors |
+                      wialon.item.Unit.dataFlag.lastMessage
 
       // запрос поиска объектов
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
         if (code) {
-          msg(wialon.core.Errors.getErrorText(code));
+          this.showMessage(`Код ошибки ${wialon.core.Errors.getErrorText(code)}`);
           return;
         }
         console.log(data);
@@ -129,10 +128,91 @@ export default {
             id: elem.getId(),
             sens: elem.getSensor(),
             result: elem.calculateSensorValue(elem.getSensor(), elem.getLastMessage()),
+            ignition: elem.getMileageCounter(),
+            a: this.getSensorValue(elem, elem.getSensor()),
           }
         })
       });
     },
+
+    /*getA() {
+      function init() { // Execute after login succeed
+        const s = wialon.core.Session.getInstance(); // get instance of current Session
+        const r = wialon.core.Remote.getInstance();
+
+        const UNIT_ID = getId();
+
+        r.remoteCall('messages/load_last', {
+            itemId: UNIT_ID,
+            lastTime: s.getServerTime(),
+            lastCount: 1,
+            flags: 0,
+            flagsMask: 0,
+            loadCount: 1
+        }, function(error) {
+            if (error) { msg(wialon.core.Errors.getErrorText(error)); return; }
+
+            r.remoteCall('unit/calc_sensors', {
+                source: '',
+                indexFrom: 0,
+                indexTo: 1,
+                unitId: UNIT_ID,
+                sensorId: 0
+            }, function(error, data) {
+                if (error) { msg(wialon.core.Errors.getErrorText(error)); return; }
+
+                msg('sensor values: ' + JSON.stringify(data, null, 1));
+            });
+        });
+      }
+    },*/
+
+    getSensorValue(elem, sensor) {
+
+      //Getting values of all unit sensors:
+
+      var sensors = elem.getSensors();
+
+      for (var i in sensors) {
+        if (sensors[i].t == "engine operation") {
+          const msg = elem.getLastMessage();
+          const result = elem.calculateSensorValue(sensor, msg);
+          if (result != -348201.3876) {// constant of invalid value
+              return result;
+          return "N/A";
+          }
+        }
+      }
+    },
+
+    logout() {
+      /*const user = wialon.core.Session.getInstance().getCurrUser();
+        if (!user) {
+          this.showMessage(`You are not logged, click 'login' button`);
+          return;
+        }*/
+      wialon.core.Session.getInstance().logout( // if user exist - logout
+      function (code) { // logout callback
+        if (code) {
+          this.showMessage(`Error, code: ${code}`)
+          } else {this.showMessage(`Logout successfully`)}
+        }
+      );
+    },
+    /*getAddress(elem) {
+      const pos = elem.getPosition()? elem.getPosition(): this.showMessage(`Location unknown`);
+        if (pos) {
+          const time = wialon.util.DateTime.formatTime(pos.t);
+          wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], function(code, address) {
+          if (code) {showMessage(wialon.core.Errors.getErrorText(code));
+          return;
+          } // exit if error code
+          msg(text + "<br/><b>Location of unit</b>: "+ address+"</div>"); // print message to log
+          });
+        } else // position data not exists, print message
+          msg(text + "<br/><b>Location of unit</b>: Unknown</div>");
+      }
+    },*/
 
     showMessages() {
       const flags = wialon.item.Item.dataFlag.base;
@@ -148,18 +228,6 @@ export default {
           console.log(data);
         })
       }
-    },
-    updateSensors() {
-
-      const unit = session.getItem();
-      const sens = unit.getSensors();
-      // calculate sensor value
-     const result = unit.calculateSensorValue(sens, unit.getLastMessage());
-
-      console.log(result)
-      // print result message
-      //msg("Value of "+ unit.getName() +" <b>'"+ sens.n +"'</b> sensor ("+ sens.t +"): "+ result + " ("+ sens.m +")");
-
     }
   }
 }

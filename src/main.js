@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
-//import { BModal, VBModal } from 'bootstrap-vue'
-//import BootstrapVue from 'bootstrap-vue'
+import { BModal, VBModal } from 'bootstrap-vue'
+import BootstrapVue from 'bootstrap-vue'
 
 
 

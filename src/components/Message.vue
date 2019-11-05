@@ -1,7 +1,7 @@
 <template>
     <div class="message popup">
       <img src="../assets/sponge.png" class="popup__avatar" width="45" height="45" alt="Изображение">
-      <p class="message__text">Здесь будет тревожненькое сообщение{{message}}</p>
+      <p class="message__text">{{message}}</p>
       <button v-on:click="closePopup" type="button" class="popup__close">Close</button>
     </div>
   </template>
@@ -11,7 +11,7 @@ export default {
 
   data () {
     return {
-
+      message: ''
     }
   },
   props: {

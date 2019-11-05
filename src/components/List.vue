@@ -5,26 +5,35 @@
       <tr>
         <th>#</th>
         <th></th>
-        <th>Name</th>
-        <th>Last message</th>
+        <th class="units__table--name">Name</th>
+        <th class="units__table--message">Last message</th>
         <th>Speed</th>
         <th>Number of sensors</th>
-
+        <th>Total mileage</th>
+        <th>Mileage of the day</th>
+        <th>Address</th>
+        <th>Plate number</th>
+        <th>Fuel level</th>
+        <th>Temperature</th>
+        <th>First time ignition start of the day</th>
+        <th>Current idling time</th>
+        <th>GPS status</th>
+        <th>Vehicle status</th>
       </tr>
       <tr v-for="(object, index) in objects">
         <td>{{index + 1}}</td>
         <td><img v-bind:src="object.icon" width="25" height="25"></td>
-        <td>{{object.name}}</td>
+        <td class="units__table--name">{{object.name}}</td>
         <td>{{object.position}}</td>
-        <td class="units__column">{{object.speed}}</td>
+        <td>{{object.speed}}</td>
         <td>{{Object.keys(object.sensors).length}}</td>
+        <td> {{object.a}}</td>
         <td v-for="data in object.sensors">
-
-{{data.n}}
-
+          {{(data.t)}}
         </td>
-
       </tr>
+
+
     </table>
 
     <span class="units__span">Всего объектов: {{getTotalCount}}</span>
@@ -56,6 +65,11 @@ console.log(this.datas)
 </script>
 
 <style>
+
+.units__table {
+  border-collapse: collapse;
+  width: 100%;
+}
   .units__span {
     color: red;
   }
@@ -66,19 +80,34 @@ console.log(this.datas)
     padding-right: 5px;
     font-weight: 400;
     font-size: 16px;
-    text-align: left;
+    text-align: center;
     vertical-align: top;
   }
 
-  .units__column {
+  .units__table tr {
+    text-align: center;
 
   }
 
-  .cols-1 {
-    width: 10%;
+  .units__table tr:nth-child(2n) {
+    background-color: #F2F2F2;
   }
-  .cols-3 {
-    width: 30%;
+
+  .units__table tr:first-child {
+    border-bottom: 1px solid gray;
   }
+
+  .units__table--name {
+    text-align: left;
+  }
+
+  .units__table .units__table--name {
+    text-align: left
+  }
+
+  .units__table .units__table--message {
+    text-align: left;
+  }
+
 
 </style>

@@ -1,34 +1,22 @@
 <template>
-    <div class="message popup">
-      <img src="../assets/sponge.png" class="popup__avatar" width="45" height="45" alt="Изображение">
-      <p class="message__text">{{message}}</p>
-      <button v-on:click="closePopup" type="button" class="popup__close">Close</button>
-    </div>
-  </template>
+  <div v-if="message" class="message popup">
+    <img src="../assets/sponge.png" class="popup__avatar" width="45" height="45" alt="Изображение">
+    <p class="message__text">{{message}}</p>
+    <button v-on:click="onClose" type="button" class="popup__close">Close</button>
+  </div>
+</template>
 
 <script>
 export default {
-
-  data () {
-    return {
-      message: ''
-    }
-  },
   props: {
-
-  },
-  methods: {
-    closePopup () {
-      const popup = document.querySelector('.popup');
-      popup.style.display = "none";
-    }
+    message: String,
+    onClose: Function
   }
 }
 </script>
 
 <style>
- .message {
-  display: none;
+.message {
   width: 500px;
   height: 200px;
   padding: 20px;
@@ -70,7 +58,4 @@ export default {
   background-color: #BEF781;
   outline: none;
 }
-
-
-
 </style>

@@ -24,7 +24,7 @@
           <Table></Table>
 
         </section>
-        <Message></Message>
+        <Message v-bind:message="currentMessage" v-bind:onClose="closeMessage"></Message>
       </div>
     </main>
   </div>
@@ -38,11 +38,6 @@ import Auth from './components/Auth'
 import Message from './components/Message'
 
 const session = wialon.core.Session.getInstance();
-session.initSession('https://hst-api.wialon.com');
-session.loadLibrary("itemIcon");
-session.loadLibrary("unitSensors");
-session.loadLibrary("unitEvents");
-
 const UPDATE_INTERVAL = 60000; //time interval to refresh data
 
 
@@ -59,6 +54,7 @@ export default {
       user: {
         name: null
       },
+      currentMessage: null,
       objects: [],
       feature: [],
     }
@@ -66,6 +62,10 @@ export default {
   methods: {
     updateToken(token) {
       this.token = token;
+      session.initSession('https://hst-api.wialon.com');
+      session.loadLibrary("itemIcon");
+      session.loadLibrary("unitSensors");
+      session.loadLibrary("unitEvents");
       session.loginToken(token, (code) => {
         this.removeClass()
         const user = session.getCurrUser()
@@ -95,10 +95,10 @@ export default {
       body.classList.remove('body');
     },
     showMessage(text) {
-        const message = document.querySelector(".message");
-        message.style.display = "block";
-        const textMessage = document.querySelector(".message__text");
-        textMessage.textContent = text;
+      this.currentMessage = text;
+    },
+    closeMessage() {
+      this.currentMessage = null;
     },
     showObjects(){
       const searchSpec = {
@@ -179,23 +179,33 @@ export default {
           const result = elem.calculateSensorValue(sensor, msg);
           if (result != -348201.3876) {// constant of invalid value
               return result;
+            }
           return "N/A";
-          }
+
         }
       }
     },
 
     logout() {
-      /*const user = wialon.core.Session.getInstance().getCurrUser();
+     const user = wialon.core.Session.getInstance().getCurrUser();
         if (!user) {
           this.showMessage(`You are not logged, click 'login' button`);
           return;
-        }*/
+        }
       wialon.core.Session.getInstance().logout( // if user exist - logout
-      function (code) { // logout callback
+      (code) => { // logout callback
         if (code) {
           this.showMessage(`Error, code: ${code}`)
-          } else {this.showMessage(`Logout successfully`)}
+          } else {
+            setTimeout(() => {
+              this.token = null;
+              this.closeMessage();
+            }, 1500);
+            this.user.name = null;
+            this.objects = [];
+            this.stopAutoRefresh();
+            this.showMessage(`Logout successfully`);
+          }
         }
       );
     },

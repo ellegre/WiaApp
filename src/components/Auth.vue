@@ -18,6 +18,7 @@
       }
     },
     created(){
+      document.body.classList.add("body");
       window.updateToken = this.updateToken;
     }
   }

@@ -13,7 +13,7 @@
         <th>Mileage of the day</th>
         <th>Address</th>
         <th>Plate number</th>
-        <th>Fuel level</th>
+        <th>Fuel level, l</th>
         <th>Temperature</th>
         <th>First time ignition start of the day</th>
         <th>Current idling time</th>
@@ -27,7 +27,11 @@
         <td>{{object.position}}</td>
         <td>{{object.speed}}</td>
         <td>{{Object.keys(object.sensors).length}}</td>
-        <td> {{object.a}}</td>
+        <td>{{object.totalMileage}}</td>
+        <td>{{object.dayMileage}}</td>
+        <td>{{object.address}}</td>
+        <td>{{object.plateNumber}}</td>
+        <td>{{object.fuelLevel}}</td>
         <td v-for="data in object.sensors">
           {{(data.t)}}
         </td>

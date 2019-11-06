@@ -119,12 +119,25 @@ export default {
         }
         console.log(data);
         this.objects = data.items.map(elem => {
+          const sensors = elem.getSensors();
+          const fuelLevelSensor = Object.values(sensors).find(value => value.t === "fuel level");
+          let fuelLevel = "N/S";
+          if (fuelLevelSensor) {
+            fuelLevel = (elem.calculateSensorValue(fuelLevelSensor, elem.getLastMessage()));
+            if (fuelLevel === -348201.3876) {
+              fuelLevel = "N/A";
+            }
+            if (fuelLevel !== "N/A" && fuelLevel !== "N/S" ) {
+              fuelLevel = Math.round(fuelLevel);
+            }
+          }
           return {
             position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
             speed: elem.getPosition()? elem.getPosition().s: "нет данных",
             name: elem.getName(),
             icon: elem.getIconUrl(),
             sensors: elem.getSensors(),
+            fuelLevel,
             id: elem.getId(),
             sens: elem.getSensor(),
             result: elem.calculateSensorValue(elem.getSensor(), elem.getLastMessage()),

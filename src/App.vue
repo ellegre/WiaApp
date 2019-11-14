@@ -5,6 +5,7 @@
       <img class="main-header__logo" src="./assets/tank_icon.png" width="62" height="62" alt="App logo">
       <h1 class="page-header__title">App Name</h1>
       <div class="logout-container">
+        <button v-on:click="showInfo" type="button" class="info__btn" :style="{backgroundImage: 'url(' + image +')'}">?</button>
         <button v-on:click="logout" class="logout__btn">Logout</button>
         <span class="logout__span" id="username">{{user.name || `Nobody`}}</span>
       </div>
@@ -18,13 +19,13 @@
       <div class="page-main__container container">
         <section class="units-data">
           <List :objects="objects"></List>
-
         </section>
         <section class="fuel">
           <Table></Table>
 
         </section>
         <Message v-bind:message="currentMessage" v-bind:onClose="closeMessage"></Message>
+        <Info v-bind:onCloseInfo="closeInfo"></Info>
       </div>
     </main>
   </div>
@@ -36,17 +37,23 @@ import List from './components/List'
 import Table from './components/Table'
 import Auth from './components/Auth'
 import Message from './components/Message'
+import Info from './components/Info'
 
 const session = wialon.core.Session.getInstance();
 const UPDATE_INTERVAL = 600000; //time interval to refresh data, ms
 
+
+let a = document.querySelector('.units__table--fuel');
+
+          console.log(a)
 
 export default {
   components: {
     'List': List,
     'Auth': Auth,
     'Table': Table,
-    'Message': Message
+    'Message': Message,
+    'Info': Info
   },
   data () {
     return {
@@ -57,6 +64,8 @@ export default {
       currentMessage: null,
       objects: [],
       feature: [],
+      image: "./assets/question.png",
+      info: false
     }
   },
   methods: {
@@ -72,10 +81,31 @@ export default {
         this.removeClass()
         const user = session.getCurrUser()
         this.user.name = user.getName()
-        const feature = session.getFeatures()
-        console.log(feature)
         this.startAutoRefresh()
       });
+    },
+    logout() {
+      const user = wialon.core.Session.getInstance().getCurrUser();
+        if (!user) {
+          this.showMessage(`You are not logged, click 'login' button`);
+          return;
+        }
+      wialon.core.Session.getInstance().logout( // if user exist - logout
+        (code) => { // logout callback
+          if (code) {
+            this.showMessage(code)
+            } else {
+              setTimeout(() => {
+                this.token = null;
+                this.closeMessage();
+              }, 1500);
+            this.user.name = null;
+            this.objects = [];
+            this.stopAutoRefresh();
+            this.showMessage(`Logout successfully`);
+          }
+        }
+      )
     },
     startAutoRefresh(){
       this.refresh();
@@ -90,7 +120,6 @@ export default {
     refresh(){
       console.log("refreshing...");
       this.showObjects();
-      this.showMessages();
     },
     removeClass() {
       const body = document.querySelector('.body');
@@ -102,6 +131,13 @@ export default {
     closeMessage() {
       this.currentMessage = null;
     },
+    showInfo() {
+      console.log(`hhhhh`)
+      this.info = true;
+    },
+    closeInfo() {
+      this.info = null;
+    },
     showObjects(){
       const searchSpec = {
         itemsType:"avl_unit",
@@ -110,38 +146,46 @@ export default {
         sortType: "!sys_id",
       };
 
-
       const dataFlags = wialon.item.Item.dataFlag.base |
                       wialon.item.Unit.dataFlag.sensors |
                       wialon.item.Unit.dataFlag.lastMessage |
                       wialon.item.Unit.dataFlag.customProps |
                       wialon.item.Unit.dataFlag.messageParams |
-                      wialon.item.Item.dataFlag.profileFields |
-                      wialon.item.Unit.dataFlag.restricted
+                      wialon.item.Item.dataFlag.profileFields
 
-
-      // запрос поиска объектов
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
         if (code) {
           this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
           return;
         }
-
         console.log(data);
 
         this.objects = data.items.map(elem => {
           const sensors = elem.getSensors();
           const profileData = elem.getProfileFields();
 
-
+          //getting unit plate number
           const plateNumbers = Object.values(profileData).find(value => value.n === "registration_plate");
           let plateNumber = "-";
           if (plateNumbers) {
             plateNumber = Object.values(plateNumbers)[2]
-            console.log(plateNumbers)
           }
           else plateNumber = "-";
 
+          //getting messages from determined interval
+          const units = session.getItems("avl_unit");
+          const to = session.getServerTime();
+          console.log(wialon.util.DateTime.formatTime(to))
+          const from = to - 3600 + 24;
+          console.log(wialon.util.DateTime.formatTime(from))
+          const unit = elem.getId();
+          const ml = session.getMessagesLoader();
+          ml.loadInterval(unit, from, to, 0, 0, 100, (code, data) => {
+            if (code) {
+                this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
+            }
+          console.log(data);
+          })
 
 
 
@@ -149,20 +193,99 @@ export default {
 
 
 
+
+          //CAN mileage total
+          const canMileageSensor = Object.values(sensors).find(value => value.n === "CAN - Mileage Total" || value.n === "CAN - Общий пробег");
+          let canMileageLevel = "N/S";
+          if (canMileageSensor) {
+            canMileageLevel = (elem.calculateSensorValue(canMileageSensor, elem.getLastMessage()));
+            if (canMileageLevel === -348201.3876) {
+              canMileageLevel = "N/A";
+           }
+            if (canMileageLevel !== "N/A" && canMileageLevel !== "N/S" ) {
+             canMileageLevel = Math.round(canMileageLevel);
+            }
+          }
+
+
+
+          //CAN Air Temperature
+          const canAirTemperatureSensor = Object.values(sensors).find(value => value.n === "CAN - Air Temperature" || value.n === "CAN - Температура воздуха");
+          let canAirTemperature = "N/S";
+          if (canAirTemperatureSensor) {
+
+          canAirTemperature = (elem.calculateSensorValue(canAirTemperatureSensor, elem.getLastMessage()));
+            if (canAirTemperature === -348201.3876) {
+              canAirTemperature = "N/A";
+            }
+            if (canAirTemperature !== "N/A" && canAirTemperature !== "N/S" ) {
+             canAirTemperature = Math.round(canAirTemperature);
+            }
+          }
+
+          //CAN ignition
+
+          const canIgnitionSensor = Object.values(sensors).find(value => value.n === "CAN - Ignition" || value.n === "CAN - Зажигание");
+          let canIgnition = "N/S"
+
+          if (canIgnitionSensor) {
+            canIgnition = (elem.calculateSensorValue(canIgnitionSensor, elem.getLastMessage()));
+            if (canIgnition === -348201.3876) {
+              canIgnition = "N/A";
+            }
+            if (canIgnition === 0) {
+              canIgnition = "off";
+            }
+            if (canIgnition !== "N/A" && canIgnition !== "N/S" && canIgnition !== 0) {
+              canIgnition = "on";
+            }
+          }
+
+
+          //CAN tacho
+          const canTachoSensor = Object.values(sensors).find(value => value.t === "CAN - Tacho" || "CAN - Тахограф");
+          let canTacho = "N/S";
+
+            canTacho = (elem.calculateSensorValue(canTachoSensor, elem.getLastMessage()));
+
+          // CAN fuel level
+          const canFuelLevelSensor = Object.values(sensors).find(value => value.t === "fuel level");
+          let canFuelLevel = "N/S";
+          if (canFuelLevelSensor) {
+            canFuelLevel = (elem.calculateSensorValue(canFuelLevelSensor, elem.getLastMessage()));
+            if (canFuelLevel === -348201.3876) {
+              canFuelLevel = "N/A";
+              //fuelLevel.style.color = 'blue';
+            }
+            if (canFuelLevel !== "N/A" && canFuelLevel !== "N/S" ) {
+              canFuelLevel = Math.round(canFuelLevel);
+            }
+          }
+
+
+
+
+
+
+
+          //getting fuel sensor value
           const fuelLevelSensor = Object.values(sensors).find(value => value.t === "fuel level");
-          let fuelLevel = "-";
+          let fuelLevel = "N/S";
           if (fuelLevelSensor) {
             fuelLevel = (elem.calculateSensorValue(fuelLevelSensor, elem.getLastMessage()));
             if (fuelLevel === -348201.3876) {
               fuelLevel = "N/A";
+              //fuelLevel.style.color = 'blue';
             }
             if (fuelLevel !== "N/A" && fuelLevel !== "N/S" ) {
               fuelLevel = Math.round(fuelLevel);
+              //fuelLevel.style.color = 'black';
             }
           }
 
+          //getting temperature sensor value
           const temperatureSensor = Object.values(sensors).find(value => value.t === "temperature");
-            let temperatureLevel = "-";
+            let temperatureLevel = "N/S";
             if (temperatureSensor) {
               temperatureLevel = (elem.calculateSensorValue(temperatureSensor, elem.getLastMessage()));
               if (temperatureLevel === -348201.3876) {
@@ -173,8 +296,9 @@ export default {
               }
             }
 
+          //getting total mileage sensor value
           const mileageSensor = Object.values(sensors).find(value => value.t === "mileage");
-          let mileageLevel = "-";
+          let mileageLevel = "N/S";
             if (mileageSensor) {
               mileageLevel = (elem.calculateSensorValue(mileageSensor, elem.getLastMessage()));
               if (mileageLevel === -348201.3876) {
@@ -185,8 +309,9 @@ export default {
               }
             }
 
+          //getting engine sensor value
           const engineSensor = Object.values(sensors).find(value => value.t === "engine operation");
-          let engineLevel = "-";
+          let engineLevel = "N/S";
             if (engineSensor) {
               engineLevel = (elem.calculateSensorValue(mileageSensor, elem.getLastMessage()));
               if (engineLevel === -348201.3876) {
@@ -200,39 +325,17 @@ export default {
               }
             }
 
-
+          //getting unit address
           let pos = elem.getPosition();
-          let unitAddress = "";
+          let unitAddress = "N/A";
           if (pos) {
-           wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], (code, address) => {
+            wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], (code, address) => {
               if (code) {
                 this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
-                return;
               }
-              unitAddress = address;
-              return unitAddress;
+            unitAddress = address;
             });
-
-            } else {
-              //address = 'N/A'// position data not exists, print message
-            }
-
-
-
-          /*function getSensorValue(sensorVaribleName,sensorType, sensorValue) {
-            const sensorVaribleName = Object.values(sensors).find(value => value.t === sensorType);
-            let sensorValue = "N/S";
-            if (sensorVaribleName) {
-              sensorValue = (elem.calculateSensorValue(sensorVaribleName, elem.getLastMessage()));
-              if (sensorValue === -348201.3876) {
-                sensorValue = "N/A";
-              }
-              if (sensorValue !== "N/A" && sensorValue !== "N/S" ) {
-                sensorValue = Math.round(sensorValue);
-              }
-            }
-          }*/
-
+          }
 
           return {
             position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
@@ -246,69 +349,17 @@ export default {
             engineLevel,
             plateNumber,
             address: unitAddress,
-            customFields: elem.getProfileFields()? elem.getProfileFields().n: "no data",
-            id: elem.getId(),
-            sens: elem.getSensor(),
+            canMileageLevel,
+            canAirTemperature,
+            canIgnition,
+            canTacho,
+            canFuelLevel
           }
         })
       });
-    },
-    logout() {
-     const user = wialon.core.Session.getInstance().getCurrUser();
-        if (!user) {
-          this.showMessage(`You are not logged, click 'login' button`);
-          return;
-        }
-      wialon.core.Session.getInstance().logout( // if user exist - logout
-      (code) => { // logout callback
-        if (code) {
-          this.showMessage(code)
-          } else {
-            setTimeout(() => {
-              this.token = null;
-              this.closeMessage();
-            }, 1500);
-            this.user.name = null;
-            this.objects = [];
-            this.stopAutoRefresh();
-            this.showMessage(`Logout successfully`);
-          }
-        }
-      );
-    },
-    /*getAddress(elem) {
-      const pos = elem.getPosition()? elem.getPosition(): this.showMessage(`Location unknown`);
-        if (pos) {
-          const time = wialon.util.DateTime.formatTime(pos.t);
-          wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], function(code, address) {
-          if (code) {showMessage(wialon.core.Errors.getErrorText(code));
-          return;
-          } // exit if error code
-          msg(text + "<br/><b>Location of unit</b>: "+ address+"</div>"); // print message to log
-          });
-        } else // position data not exists, print message
-          msg(text + "<br/><b>Location of unit</b>: Unknown</div>");
-      }
-    },*/
-
-    showMessages() {
-      const flags = wialon.item.Item.dataFlag.base;
-        wialon.core.Session.getInstance().updateDataFlags( // load items to current session
-          [{type: "type", data: "avl_unit", flags: flags, mode: 0}], initData());
-      function initData () {
-        const units = session.getItems("avl_unit");
-        const to = session.getServerTime();
-        const from = to - 3600 + 24;
-        const unit = 12495637;
-        const ml = session.getMessagesLoader();
-        ml.loadInterval(unit, from, to, 0, 0, 100, (code, data) => {
-          console.log(data);
-        })
-      }
     }
   }
-}
-
+};
 
 </script>
 
@@ -350,6 +401,24 @@ ul {
 
 .logout-container {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.info__btn {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 50%;
+  font-size: 18px;
+  background-color: #F2F2F2;
+  border: 2px solid gray;
+}
+
+.info__btn:focus,
+.info__btn:hover {
+  background-color: #CEF6CE;
+  color: #585858;
 }
 
 .logout__btn {

@@ -5,7 +5,7 @@
   export default {
     data () {
       return {
-        src: "https://hosting.wialon.com/login.html?redirect_uri="
+        src: "https://hosting.wialon.com/login.html?css_url=http://localhost:8080/FirstVueApp/src/assets/css/style.css&redirect_uri="
         + encodeURIComponent("http://localhost:8080/auth.html")
       }
     },

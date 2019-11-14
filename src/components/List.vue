@@ -20,6 +20,11 @@
         <th>Current idling time</th>
         <th>GPS status</th>
         <th>Vehicle status</th>
+        <th>CAN-mileage total</th>
+        <th>CAN Air Temperature</th>
+        <th>CAN ignition</th>
+        <th>CAN tacho</th>
+        <th>CAN fuel level</th>
       </tr>
       <tr v-for="(object, index) in objects">
         <td>{{index + 1}}</td>
@@ -32,12 +37,20 @@
         <td>{{object.dayMileage}}</td>
         <td>{{object.address}}</td>
         <td>{{object.plateNumber}}</td>
-        <td>{{object.fuelLevel}}</td>
+        <td class="units__table--fuel">{{object.fuelLevel}}</td>
         <td>{{object.temperatureLevel}}</td>
         <td>{{object.engineLevel}}</td>
+        <td></td>
+        <td></td>
+        <td></td>
         <td>{{object.customFields}}</td>
+        <td>{{object.canMileageLevel}}</td>
+        <td>{{object.canAirTemperature}}</td>
+        <td>{{object.canIgnition}}</td>
+        <td>{{object.canTacho}}</td>
+        <td>{{object.canFuelLevel}}</td>
         <td v-for="data in object.sensors">
-          {{(data.t)}}
+          {{(data.n)}}
         </td>
       </tr>
 

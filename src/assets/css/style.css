@@ -25,3 +25,7 @@ body {
 .show {
   display: block;
 }
+
+input {
+  background-color: red;
+}

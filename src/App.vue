@@ -21,7 +21,7 @@
           <List :objects="objects"></List>
         </section>
         <section class="fuel">
-          <Table></Table>
+          <Stats></Stats>
 
         </section>
         <Message v-bind:message="currentMessage" v-bind:onClose="closeMessage"></Message>
@@ -34,7 +34,7 @@
 
 <script>
 import List from './components/List'
-import Table from './components/Table'
+import Stats from './components/Stats'
 import Auth from './components/Auth'
 import Message from './components/Message'
 import Info from './components/Info'
@@ -51,12 +51,13 @@ export default {
   components: {
     'List': List,
     'Auth': Auth,
-    'Table': Table,
+    'Stats': Stats,
     'Message': Message,
     'Info': Info
   },
   data () {
     return {
+      title: 'Go to gurtam.com',
       token: null,
       user: {
         name: null
@@ -77,6 +78,8 @@ export default {
       session.loadLibrary("unitEvents");
       session.loadLibrary("itemCustomFields");
       session.loadLibrary("itemProfileFields");
+      session.loadLibrary("resourceReports");
+
       session.loginToken(token, (code) => {
         this.removeClass()
         const user = session.getCurrUser()
@@ -85,12 +88,8 @@ export default {
       });
     },
     logout() {
-      const user = wialon.core.Session.getInstance().getCurrUser();
-        if (!user) {
-          this.showMessage(`You are not logged, click 'login' button`);
-          return;
-        }
-      wialon.core.Session.getInstance().logout( // if user exist - logout
+
+      wialon.core.Session.getInstance().logout(
         (code) => { // logout callback
           if (code) {
             this.showMessage(code)
@@ -143,7 +142,8 @@ export default {
         itemsType:"avl_unit",
         propName: "sys_name",
         propValueMask: "*",
-        sortType: "!sys_id",
+        sortType: "sys_name",
+
       };
 
       const dataFlags = wialon.item.Item.dataFlag.base |
@@ -151,7 +151,10 @@ export default {
                       wialon.item.Unit.dataFlag.lastMessage |
                       wialon.item.Unit.dataFlag.customProps |
                       wialon.item.Unit.dataFlag.messageParams |
-                      wialon.item.Item.dataFlag.profileFields
+                      wialon.item.Item.dataFlag.profileFields |
+                      wialon.item.Resource.dataFlag.reports  |
+                      wialon.item.Unit.dataFlag.restricted |
+                      wialon.item.Unit.dataFlag.other
 
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
         if (code) {
@@ -175,23 +178,14 @@ export default {
           //getting messages from determined interval
           const units = session.getItems("avl_unit");
           const to = session.getServerTime();
-          console.log(wialon.util.DateTime.formatTime(to))
           const from = to - 3600 + 24;
-          console.log(wialon.util.DateTime.formatTime(from))
           const unit = elem.getId();
           const ml = session.getMessagesLoader();
           ml.loadInterval(unit, from, to, 0, 0, 100, (code, data) => {
             if (code) {
                 this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
             }
-          console.log(data);
           })
-
-
-
-
-
-
 
 
           //CAN mileage total
@@ -206,7 +200,6 @@ export default {
              canMileageLevel = Math.round(canMileageLevel);
             }
           }
-
 
 
           //CAN Air Temperature
@@ -261,12 +254,6 @@ export default {
               canFuelLevel = Math.round(canFuelLevel);
             }
           }
-
-
-
-
-
-
 
           //getting fuel sensor value
           const fuelLevelSensor = Object.values(sensors).find(value => value.t === "fuel level");
@@ -353,7 +340,6 @@ export default {
             canAirTemperature,
             canIgnition,
             canTacho,
-            canFuelLevel
           }
         })
       });
@@ -397,6 +383,11 @@ ul {
   text-transform: uppercase;
   color: #DC143C;
   text-shadow: gray 2px 3px 4px;
+}
+
+.gurtam__logo {
+  margin-left: 20px;
+  display: inline-block;
 }
 
 .logout-container {

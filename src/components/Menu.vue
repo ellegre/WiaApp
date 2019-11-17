@@ -1,7 +1,7 @@
 <template>
   <nav class="screen-controls">
-    <a class="screen-controls__btn screen-controls__btn--active" id="table" href="#">{{table}}</a>
-    <a class="screen-controls__btn" id="stat" href="#">{{stats}}</a>
+    <button v-on:click="changeState('default')" class="screen-controls__btn screen-controls__btn--active" id="table">Table</button>
+    <button v-on:click="changeState('diagram')" class="screen-controls__btn" id="stat">Stats</button>
   </nav>
 </template>
 
@@ -9,10 +9,13 @@
 export default {
 
   data () {
+
     return {
-      table: `Table`,
-      stats: `Stats`
+
     }
+  },
+  props: {
+    state: String
   }
 }
 </script>
@@ -24,11 +27,14 @@ export default {
 }
 
 .screen-controls__btn {
- display: inline-block;
- text-decoration: none;
- width: 10%;
+ width: 80px;
+ cursor: pointer;
+ padding: 10px;
  color: #fff;
+ font-size: 20px;
  font-weight: 700;
+ background-color: #078ff0;
+ border: none;
 }
 
 .screen-controls__btn--active {

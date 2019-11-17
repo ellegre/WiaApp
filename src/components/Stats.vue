@@ -1,14 +1,21 @@
 <template>
-
+<canvas id="myChart" width="400" height="400"></canvas>
 </template>
 
 <script>
   export default {
 
     data () {
+      state: 'diagram'
         return {
 
       }
     }
   }
+
+
 </script>
+</script>
+<style>
+
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="units__container">
+  <div v-if="" class="units__container">
 
     <table class="units__table" v-if="objects.length">
       <tr>
@@ -23,7 +23,6 @@
         <th>CAN-mileage total</th>
         <th>CAN Air Temperature</th>
         <th>CAN ignition</th>
-        <th>CAN tacho</th>
         <th>CAN fuel level</th>
       </tr>
       <tr v-for="(object, index) in objects">
@@ -47,11 +46,10 @@
         <td>{{object.canMileageLevel}}</td>
         <td>{{object.canAirTemperature}}</td>
         <td>{{object.canIgnition}}</td>
-        <td>{{object.canTacho}}</td>
         <td>{{object.canFuelLevel}}</td>
-        <td v-for="data in object.sensors">
+        <!--<td v-for="data in object.sensors">
           {{(data.n)}}
-        </td>
+        </td>-->
       </tr>
 
 
@@ -71,6 +69,7 @@ export default {
     }
   },
   data () {
+    state:
     return {
 
     }

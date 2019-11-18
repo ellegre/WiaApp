@@ -57,7 +57,6 @@ export default {
   },
   data () {
     return {
-      title: 'Go to gurtam.com',
       token: null,
       user: {
         name: null
@@ -167,6 +166,7 @@ export default {
           const sensors = elem.getSensors();
           const profileData = elem.getProfileFields();
 
+
           //getting unit plate number
           const plateNumbers = Object.values(profileData).find(value => value.n === "registration_plate");
           let plateNumber = "-";
@@ -175,17 +175,27 @@ export default {
           }
           else plateNumber = "-";
 
+
+
+
           //getting messages from determined interval
           const units = session.getItems("avl_unit");
           const to = session.getServerTime();
-          const from = to - 3600 + 24;
+          const from = to - 3600 * 24;
           const unit = elem.getId();
           const ml = session.getMessagesLoader();
+          let msg = 0
           ml.loadInterval(unit, from, to, 0, 0, 100, (code, data) => {
+
             if (code) {
                 this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
-            }
+            } else if (data.length == 0) {
+              msg = "N/d";
+
+            } else msg = Array.from(data, ({name}) => name)
+            console.log(name)
           })
+
 
 
           //CAN mileage total
@@ -314,14 +324,18 @@ export default {
 
           //getting unit address
           let pos = elem.getPosition();
-          let unitAddress = "N/A";
-          if (pos) {
-            wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], (code, address) => {
-              if (code) {
-                this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
-              }
-            unitAddress = address;
-            });
+          const getUnitAddress = () => {
+            let unitAddress = "N/A";
+            if (pos) {
+              wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], (code, address) => {
+                if (code) {
+                  this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
+                }
+              unitAddress = address;
+              });
+              return unitAddress;
+              console.log(unitAddress)
+            }
           }
 
           return {
@@ -330,12 +344,12 @@ export default {
             name: elem.getName(),
             icon: elem.getIconUrl(),
             sensors: elem.getSensors(),
+           // address: elem.getUnitAddress(),
             fuelLevel,
             temperatureLevel,
             mileageLevel,
             engineLevel,
             plateNumber,
-            address: unitAddress,
             canMileageLevel,
             canAirTemperature,
             canIgnition,

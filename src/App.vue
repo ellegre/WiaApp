@@ -25,7 +25,7 @@
 
         </section>
         <Message v-bind:message="currentMessage" v-bind:onClose="closeMessage"></Message>
-        <Info v-bind:onCloseInfo="closeInfo"></Info>
+        <Info v-bind:info="info" v-bind:onClose="closeInfo"></Info>
       </div>
     </main>
   </div>
@@ -40,12 +40,7 @@ import Message from './components/Message'
 import Info from './components/Info'
 
 const session = wialon.core.Session.getInstance();
-const UPDATE_INTERVAL = 600000; //time interval to refresh data, ms
-
-
-let a = document.querySelector('.units__table--fuel');
-
-          console.log(a)
+const UPDATE_INTERVAL = 6000; //time interval to refresh data, ms
 
 export default {
   components: {
@@ -161,8 +156,9 @@ export default {
           return;
         }
         console.log(data);
+        const locationsToGet = [];
 
-        this.objects = data.items.map(elem => {
+        const partialData = data.items.map(elem => {
           const sensors = elem.getSensors();
           const profileData = elem.getProfileFields();
 
@@ -324,7 +320,12 @@ export default {
 
           //getting unit address
           let pos = elem.getPosition();
-          const getUnitAddress = () => {
+          let locationIndex = null;
+          if(pos) {
+            locationsToGet.push({lon:pos.x, lat:pos.y});
+            locationIndex = locationsToGet.length - 1;
+          }
+          /*const getUnitAddress = () => {
             let unitAddress = "N/A";
             if (pos) {
               wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], (code, address) => {
@@ -336,7 +337,7 @@ export default {
               return unitAddress;
               console.log(unitAddress)
             }
-          }
+          }*/
 
           return {
             position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
@@ -344,7 +345,7 @@ export default {
             name: elem.getName(),
             icon: elem.getIconUrl(),
             sensors: elem.getSensors(),
-           // address: elem.getUnitAddress(),
+            locationIndex,
             fuelLevel,
             temperatureLevel,
             mileageLevel,
@@ -355,7 +356,24 @@ export default {
             canIgnition,
             canTacho,
           }
-        })
+        });
+
+
+        wialon.util.Gis.getLocations(locationsToGet, (code, addresses) => {
+          if (code) {
+            this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
+          } else {
+            const finalData = partialData.map(elem => {
+              if (elem.locationIndex !== null) {
+                elem.address = addresses[elem.locationIndex];
+              } else {
+                elem.address = "N/A"
+              }
+              return elem;
+            });
+            this.objects = finalData;
+          }
+        });
       });
     }
   }

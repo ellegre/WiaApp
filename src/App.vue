@@ -40,7 +40,7 @@ import Message from './components/Message'
 import Info from './components/Info'
 
 const session = wialon.core.Session.getInstance();
-const UPDATE_INTERVAL = 6000; //time interval to refresh data, ms
+const UPDATE_INTERVAL = 600000; //time interval to refresh data, ms
 
 export default {
   components: {
@@ -73,6 +73,7 @@ export default {
       session.loadLibrary("itemCustomFields");
       session.loadLibrary("itemProfileFields");
       session.loadLibrary("resourceReports");
+      session.loadLibrary("unitTripDetector");
 
       session.loginToken(token, (code) => {
         this.removeClass()
@@ -163,34 +164,27 @@ export default {
           const profileData = elem.getProfileFields();
 
 
-          //getting unit plate number
+          // Getting unit plate number
           const plateNumbers = Object.values(profileData).find(value => value.n === "registration_plate");
-          let plateNumber = "-";
+          let plateNumber = "--";
           if (plateNumbers) {
-            plateNumber = Object.values(plateNumbers)[2]
+            plateNumber = Object.values(plateNumbers)[2];
           }
-          else plateNumber = "-";
+
+          // Getting an array of coordinates of all units for later get current unit position
+          let pos = elem.getPosition();
+          let locationIndex = null;
+          if(pos) {
+            locationsToGet.push({lon:pos.x, lat:pos.y});
+            locationIndex = locationsToGet.length - 1;
+          }
 
 
 
 
-          //getting messages from determined interval
-          const units = session.getItems("avl_unit");
-          const to = session.getServerTime();
-          const from = to - 3600 * 24;
-          const unit = elem.getId();
-          const ml = session.getMessagesLoader();
-          let msg = 0
-          ml.loadInterval(unit, from, to, 0, 0, 100, (code, data) => {
 
-            if (code) {
-                this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
-            } else if (data.length == 0) {
-              msg = "N/d";
 
-            } else msg = Array.from(data, ({name}) => name)
-            console.log(name)
-          })
+
 
 
 
@@ -318,30 +312,21 @@ export default {
               }
             }
 
-          //getting unit address
-          let pos = elem.getPosition();
-          let locationIndex = null;
-          if(pos) {
-            locationsToGet.push({lon:pos.x, lat:pos.y});
-            locationIndex = locationsToGet.length - 1;
+
+
+
+
+
+         //getting unit trip detector
+         let trips = []
+          const a = elem.getTripDetector();
+          if(a) {
+            let trips = a;
           }
-          /*const getUnitAddress = () => {
-            let unitAddress = "N/A";
-            if (pos) {
-              wialon.util.Gis.getLocations([{lon:pos.x, lat:pos.y}], (code, address) => {
-                if (code) {
-                  this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
-                }
-              unitAddress = address;
-              });
-              return unitAddress;
-              console.log(unitAddress)
-            }
-          }*/
 
           return {
-            position: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "нет данных",
-            speed: elem.getPosition()? elem.getPosition().s: "нет данных",
+            lastMessage: elem.getLastMessage()? wialon.util.DateTime.formatTime((elem.getLastMessage()).t): "--",
+            speed: elem.getPosition()? elem.getPosition().s: "--",
             name: elem.getName(),
             icon: elem.getIconUrl(),
             sensors: elem.getSensors(),
@@ -355,8 +340,10 @@ export default {
             canAirTemperature,
             canIgnition,
             canTacho,
+            trips
           }
         });
+
 
 
         wialon.util.Gis.getLocations(locationsToGet, (code, addresses) => {
@@ -434,21 +421,20 @@ ul {
   margin-right: 10px;
   border-radius: 50%;
   font-size: 18px;
-  background-color: #F2F2F2;
+  background: #F2F2F2;
   border: 2px solid gray;
 }
 
 .info__btn:focus,
 .info__btn:hover {
-  background-color: #CEF6CE;
-  color: #585858;
+  background: #FAFAFA;
+  color: #0000FF;
 }
 
 .logout__btn {
   background: linear-gradient(to bottom, #F2F2F2 0%, #E6E6E6 100%);
   font-weight: 500;
   font-size: 17px;
-  font-family: Comic Sans MS;
   line-height: 21px;
   font-family: inherit;
   border-radius: 15px;
@@ -458,11 +444,11 @@ ul {
 .logout__btn:focus,
 .logout__btn:hover {
   background: linear-gradient(to bottom, #F2F2F2 0%, #E0F8E6 100%);
-  color: #585858;
+  color: #0000FF;
 }
 
 .logout__span {
-  margin-left: 5px;
+  margin-left: 10px;
   color: #fff;
   font-family: Comic Sans MS;
   font-size: 17px;

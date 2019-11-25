@@ -1,5 +1,5 @@
 <template>
-  <div v-if="" class="units__container">
+  <div class="units__container">
 
     <table class="units__table" v-if="objects.length">
       <tr>
@@ -9,13 +9,13 @@
         <th>Plate number</th>
         <th>Last message</th>
         <th>Position</th>
-        <th>Speed</th>
+        <th>Speed, km/h</th>
         <th>Total mileage, km</th>
-        <th>Mileage of the day, km</th>
+        <th>Daily mileage, km</th>
         <th>Fuel level, l</th>
         <th>Temperature, °C</th>
         <th>Ignition, on/off</th>
-        <th>First time ignition start of the day</th>
+        <th>Ignition first start</th>
         <th>Current idling time</th>
         <th>GPS status</th>
       </tr>
@@ -27,15 +27,13 @@
         <td class="units__table--message">{{object.lastMessage}}</td>
         <td class="units__table--position">{{object.address}}</td>
         <td>{{object.speed}}</td>
-        <td>{{object.mileageLevel}}</td>
+        <td>{{object.mileageCounter}}</td>
         <td>{{object.dayMileage}}</td>
 
 
-        <td class="units__table--fuel">{{object.fuelLevel}}</td>
+        <td>{{object.fuelLevel}}</td>
         <td>{{object.temperatureLevel}}</td>
-        <!--<td>{{object.engineLevel}}</td>
-        <td></td>
-        <td></td>
+        <td>{{object.engineLevel}}</td>
         <td></td>
         <td>{{object.customFields}}</td>
         <td>{{object.canMileageLevel}}</td>
@@ -44,7 +42,7 @@
         <td>{{object.canFuelLevel}}</td>
         <td v-for="data in object.sensors">
           {{(data.t)}}
-        </td>-->
+        </td>
       </tr>
 
 
@@ -59,12 +57,10 @@ export default {
   props: {
     objects: {
       type: Array,
-      required: false,
       dafault: []
     }
   },
   data () {
-    state:
     return {
 
     }

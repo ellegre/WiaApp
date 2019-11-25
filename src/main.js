@@ -6,11 +6,6 @@ import Chart from "chart.js"
 import ChartDataLabels from "chartjs-plugin-datalabels"
 
 
-import Menu from './components/Menu'
-Vue.component('Menu', Menu)
-
-
-
 new Vue({
   el: '#app',
   render: h => h(App)

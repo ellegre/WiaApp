@@ -1,29 +1,29 @@
 <template>
   <div v-if="token" class="general-container">
     <header class="main-header">
-    <div class="main-header__container container">
-      <img class="main-header__logo" src="./assets/tank_icon.png" width="62" height="62" alt="App logo">
-      <h1 class="page-header__title">App Name</h1>
-      <div class="logout-container">
-        <button v-on:click="showInfo" type="button" class="info__btn" :style="{backgroundImage: 'url(' + image +')'}">?</button>
-        <button v-on:click="logout" class="logout__btn">Logout</button>
-        <span class="logout__span" id="username">{{user.name || `Nobody`}}</span>
+      <div class="main-header__container container">
+        <img class="main-header__logo" src="./assets/tank_icon.png" width="62" height="62" alt="App logo">
+        <h1 class="page-header__title">App Name</h1>
+        <div class="logout-container">
+          <button v-on:click="showInfo" type="button" class="info__btn" :style="{backgroundImage: 'url(' + image +')'}">?</button>
+          <button v-on:click="logout" class="logout__btn">Logout</button>
+          <span class="logout__span" id="username">{{user.name || `Nobody`}}</span>
+        </div>
       </div>
-      <div class="main-header__content">
-        <Filters></Filters>
-        <Menu></Menu>
-      </div>
-    </div>
+      <nav class="screen-controls">
+        <button v-on:click="component = 'List'" class="screen-controls__btn screen-controls__btn--active" id="table">Table</button>
+        <button v-on:click="component = 'Stats'" class="screen-controls__btn" id="stat">Stats</button>
+      </nav>
     </header>
     <main class="page-main">
       <div class="page-main__container container">
-        <section class="units-data">
+        <keep-alive>
+          <component v-bind:is="component"></component>
+        </keep-alive>
+        <line-chart :chartdata="chartData"  :options="chartOptions"/>
           <List :objects="objects"></List>
-        </section>
-        <section class="fuel">
-          <Stats></Stats>
 
-        </section>
+
         <Message v-bind:message="currentMessage" v-bind:onClose="closeMessage"></Message>
         <Info v-bind:info="info" v-bind:onClose="closeInfo"></Info>
       </div>
@@ -39,8 +39,11 @@ import Auth from './components/Auth'
 import Message from './components/Message'
 import Info from './components/Info'
 
+
 const session = wialon.core.Session.getInstance();
-const UPDATE_INTERVAL = 600000; //time interval to refresh data, ms
+const UPDATE_INTERVAL = 60000; //time interval to refresh data, ms
+
+
 
 export default {
   components: {
@@ -50,7 +53,9 @@ export default {
     'Message': Message,
     'Info': Info
   },
+
   data () {
+
     return {
       token: null,
       user: {
@@ -60,9 +65,11 @@ export default {
       objects: [],
       feature: [],
       image: "./assets/question.png",
-      info: false
+      info: false,
+      component: 'List'
     }
   },
+
   methods: {
     updateToken(token) {
       this.token = token;
@@ -148,8 +155,9 @@ export default {
                       wialon.item.Unit.dataFlag.messageParams |
                       wialon.item.Item.dataFlag.profileFields |
                       wialon.item.Resource.dataFlag.reports  |
-                      wialon.item.Unit.dataFlag.restricted |
-                      wialon.item.Unit.dataFlag.other
+                      wialon.item.Unit.dataFlag.restricted
+
+
 
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
         if (code) {
@@ -162,7 +170,6 @@ export default {
         const partialData = data.items.map(elem => {
           const sensors = elem.getSensors();
           const profileData = elem.getProfileFields();
-
 
           // Getting unit plate number
           const plateNumbers = Object.values(profileData).find(value => value.n === "registration_plate");
@@ -179,82 +186,6 @@ export default {
             locationIndex = locationsToGet.length - 1;
           }
 
-
-
-
-
-
-
-
-
-
-          //CAN mileage total
-          const canMileageSensor = Object.values(sensors).find(value => value.n === "CAN - Mileage Total" || value.n === "CAN - Общий пробег");
-          let canMileageLevel = "N/S";
-          if (canMileageSensor) {
-            canMileageLevel = (elem.calculateSensorValue(canMileageSensor, elem.getLastMessage()));
-            if (canMileageLevel === -348201.3876) {
-              canMileageLevel = "N/A";
-           }
-            if (canMileageLevel !== "N/A" && canMileageLevel !== "N/S" ) {
-             canMileageLevel = Math.round(canMileageLevel);
-            }
-          }
-
-
-          //CAN Air Temperature
-          const canAirTemperatureSensor = Object.values(sensors).find(value => value.n === "CAN - Air Temperature" || value.n === "CAN - Температура воздуха");
-          let canAirTemperature = "N/S";
-          if (canAirTemperatureSensor) {
-
-          canAirTemperature = (elem.calculateSensorValue(canAirTemperatureSensor, elem.getLastMessage()));
-            if (canAirTemperature === -348201.3876) {
-              canAirTemperature = "N/A";
-            }
-            if (canAirTemperature !== "N/A" && canAirTemperature !== "N/S" ) {
-             canAirTemperature = Math.round(canAirTemperature);
-            }
-          }
-
-          //CAN ignition
-
-          const canIgnitionSensor = Object.values(sensors).find(value => value.n === "CAN - Ignition" || value.n === "CAN - Зажигание");
-          let canIgnition = "N/S"
-
-          if (canIgnitionSensor) {
-            canIgnition = (elem.calculateSensorValue(canIgnitionSensor, elem.getLastMessage()));
-            if (canIgnition === -348201.3876) {
-              canIgnition = "N/A";
-            }
-            if (canIgnition === 0) {
-              canIgnition = "off";
-            }
-            if (canIgnition !== "N/A" && canIgnition !== "N/S" && canIgnition !== 0) {
-              canIgnition = "on";
-            }
-          }
-
-
-          //CAN tacho
-          const canTachoSensor = Object.values(sensors).find(value => value.t === "CAN - Tacho" || "CAN - Тахограф");
-          let canTacho = "N/S";
-
-            canTacho = (elem.calculateSensorValue(canTachoSensor, elem.getLastMessage()));
-
-          // CAN fuel level
-          const canFuelLevelSensor = Object.values(sensors).find(value => value.t === "fuel level");
-          let canFuelLevel = "N/S";
-          if (canFuelLevelSensor) {
-            canFuelLevel = (elem.calculateSensorValue(canFuelLevelSensor, elem.getLastMessage()));
-            if (canFuelLevel === -348201.3876) {
-              canFuelLevel = "N/A";
-              //fuelLevel.style.color = 'blue';
-            }
-            if (canFuelLevel !== "N/A" && canFuelLevel !== "N/S" ) {
-              canFuelLevel = Math.round(canFuelLevel);
-            }
-          }
-
           //getting fuel sensor value
           const fuelLevelSensor = Object.values(sensors).find(value => value.t === "fuel level");
           let fuelLevel = "N/S";
@@ -262,11 +193,9 @@ export default {
             fuelLevel = (elem.calculateSensorValue(fuelLevelSensor, elem.getLastMessage()));
             if (fuelLevel === -348201.3876) {
               fuelLevel = "N/A";
-              //fuelLevel.style.color = 'blue';
             }
             if (fuelLevel !== "N/A" && fuelLevel !== "N/S" ) {
               fuelLevel = Math.round(fuelLevel);
-              //fuelLevel.style.color = 'black';
             }
           }
 
@@ -307,44 +236,62 @@ export default {
               if (engineLevel === 0) {
                 engineLevel = "off";
               }
-              if (engineLevel !== "N/A" && engineLevel !== "N/S" && engineLevel !== 0) {
+              if (engineLevel === 1) {
                 engineLevel = "on";
               }
             }
 
 
+          function msToTime(duration) {
+          var milliseconds = parseInt((duration % 1000) / 100),
+            seconds = parseInt((duration / 1000) % 60),
+            minutes = parseInt((duration / (1000 * 60)) % 60),
+            hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+
+          hours = (hours < 10) ? "0" + hours : hours;
+          minutes = (minutes < 10) ? "0" + minutes : minutes;
+          seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+          return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
+        }
 
 
 
-
-         //getting unit trip detector
-         let trips = []
-          const a = elem.getTripDetector();
-          if(a) {
-            let trips = a;
+         let to = session.getServerTime(); // get ServerTime, it will be end time
+         //console.log(to, wialon.util.DateTime.formatTime(to))
+         to = to * 1000;
+         let from = new Date();
+         from.setHours(8, 0, 0);
+         from = from.getTime();
+         from = to - from;
+         let history = elem.getIgnitionHistory(1, from, to, 0, null, function(code, result) {
+          if (code) {
+            console.log(code)
           }
+          console.log(result);
+         });
+
+
+
+
 
           return {
-            lastMessage: elem.getLastMessage()? wialon.util.DateTime.formatTime((elem.getLastMessage()).t): "--",
+            lastMessage: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "--",
             speed: elem.getPosition()? elem.getPosition().s: "--",
             name: elem.getName(),
             icon: elem.getIconUrl(),
             sensors: elem.getSensors(),
+            mileageCounter:elem.getMileageCounter()? elem.getMileageCounter().toLocaleString(): "--",
             locationIndex,
             fuelLevel,
             temperatureLevel,
             mileageLevel,
             engineLevel,
             plateNumber,
-            canMileageLevel,
-            canAirTemperature,
-            canIgnition,
-            canTacho,
-            trips
           }
         });
 
-
+console.log(history)
 
         wialon.util.Gis.getLocations(locationsToGet, (code, addresses) => {
           if (code) {
@@ -354,7 +301,7 @@ export default {
               if (elem.locationIndex !== null) {
                 elem.address = addresses[elem.locationIndex];
               } else {
-                elem.address = "N/A"
+                elem.address = "--"
               }
               return elem;
             });
@@ -471,5 +418,21 @@ ul {
   padding: 0;
   margin: -1px;
   border: 0;
+}
+
+.screen-controls__btn {
+ width: 80px;
+ cursor: pointer;
+ padding: 10px;
+ color: #fff;
+ font-size: 20px;
+ font-weight: 700;
+ background-color: #078ff0;
+ border: none;
+}
+
+.screen-controls__btn--active {
+  text-decoration: underline;
+  font-size: 22px;
 }
 </style>

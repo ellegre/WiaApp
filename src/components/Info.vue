@@ -5,7 +5,7 @@
       The list of objects is a table that contains relevant information on the objects. The following parameters are presented:
        plate number, speed, mileage, daily mileage, current position, fuel level, temperature, ignition state, first time ignition start of the day,
      current idling time, GPS status, vehicle status. </p>
-     <p class="info__text">The information in the application is updated every minute.</p>
+     <p class="info__text">The information in the application is updated every minute. The beginning of the working day is taken at 8 a.m.</p>
 
     <table class="info__table">
       <tr>
@@ -24,12 +24,13 @@
         <td>Invalid value. For example, invalid or nonexistent sensor parameter, invalid math operations etc.</td>
       </tr>
     </table>
-    <span class="info__span">Have questions?</span>
-    <ul class="info__links">
-      <a class="link__item" href="mailto:support@gurtam.com" target="_blank">Write us</a>
-      <a class="link__item" href="https://forum.gurtam.com/" target="_blank">Forum to discuss</a>
-    </ul>
-    <button  tabindex="0" @keyup.esc="" v-on:click="onClose" type="button" class="popup__close">Close</button>
+    <div class="info__container">
+      <ul class="info__links">
+        <a class="link__item" href="mailto:support@gurtam.com" target="_blank">Write us</a>
+        <a class="link__item" href="https://forum.gurtam.com/" target="_blank">Forum to discuss</a>
+      </ul>
+      <button  tabindex="0" @keyup.esc="" v-on:click="onClose" type="button" class="popup__close">Close</button>
+    </div>
   </div>
 </template>
 
@@ -118,7 +119,14 @@ export default {
   margin-bottom: 5px;
 }
 
+.info__container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .info__links {
+  display: inline-block;
   padding: 0;
   margin: 0;
   margin-bottom: 20px;
@@ -141,7 +149,7 @@ export default {
   font-size: 18px;
   width: 200px;
   cursor: pointer;
-  background-color: #E3F6CE;
+  background-color: 0099ff;
 }
 
 .popup__close:hover,

@@ -1,21 +1,28 @@
-<template>
-<canvas id="myChart" width="400" height="400"></canvas>
-</template>
 
 <script>
+  import {Bar} from 'vue-chartjs'
+
+
   export default {
+    extends: Bar,
+    props:  {
+      chartdata: {
+      type: Object,
+      default: null
+      },
 
-    data () {
-      state: 'diagram'
-        return {
-
+    options: {
+      type: Object,
+      default: null
       }
+    },
+
+    mounted () {
+      this.renderChart(this.chartdata, this.options)
     }
   }
 
+</script>
 
-</script>
-</script>
 <style>
-
 </style>

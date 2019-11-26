@@ -40,9 +40,9 @@
         <td>{{object.canAirTemperature}}</td>
         <td>{{object.canIgnition}}</td>
         <td>{{object.canFuelLevel}}</td>
-        <td v-for="data in object.sensors">
+        <!--<td v-for="data in object.sensors">
           {{(data.t)}}
-        </td>
+        </td>-->
       </tr>
 
 

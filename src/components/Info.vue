@@ -135,7 +135,9 @@ export default {
 .link__item {
   color: #078ff0;
   text-decoration: none;
+  font-size: 12px;
 }
+
 .link__item:hover,
 .link__item:focus {
   color: #2E2EFE;

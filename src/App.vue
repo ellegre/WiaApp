@@ -10,7 +10,7 @@
           <span class="logout__span" id="username">{{user.name || `Nobody`}}</span>
         </div>
       </div>
-      <nav class="screen-controls">
+      <nav class="screen-controls container">
         <button v-on:click="component = 'List'" class="screen-controls__btn screen-controls__btn--active" id="table">Table</button>
         <button v-on:click="component = 'Stats'" class="screen-controls__btn" id="stat">Stats</button>
       </nav>
@@ -241,24 +241,7 @@ export default {
               }
             }
 
-
-          function msToTime(duration) {
-          var milliseconds = parseInt((duration % 1000) / 100),
-            seconds = parseInt((duration / 1000) % 60),
-            minutes = parseInt((duration / (1000 * 60)) % 60),
-            hours = parseInt((duration / (1000 * 60 * 60)) % 24);
-
-          hours = (hours < 10) ? "0" + hours : hours;
-          minutes = (minutes < 10) ? "0" + minutes : minutes;
-          seconds = (seconds < 10) ? "0" + seconds : seconds;
-
-          return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
-        }
-
-
-
          let to = session.getServerTime(); // get ServerTime, it will be end time
-         //console.log(to, wialon.util.DateTime.formatTime(to))
          to = to * 1000;
          let from = new Date();
          from.setHours(8, 0, 0);
@@ -270,9 +253,6 @@ export default {
           }
           console.log(result);
          });
-
-
-
 
 
           return {

@@ -11,17 +11,15 @@
         </div>
       </div>
       <nav class="screen-controls container">
-        <button v-on:click="component = 'List'" class="screen-controls__btn screen-controls__btn--active" id="table">Table</button>
-        <button v-on:click="component = 'Stats'" class="screen-controls__btn" id="stat">Stats</button>
+        <button v-on:click="component = 'List'" v-bind:class="{active: isActive}" class="screen-controls__btn" id="table">Table</button>
+        <button v-on:click="component = 'Stats'" v-bind:class="{active: isActive}" class="screen-controls__btn" id="stat">Stats</button>
       </nav>
     </header>
     <main class="page-main">
       <div class="page-main__container container">
-        <keep-alive>
-          <component v-bind:is="component"></component>
-        </keep-alive>
-        <line-chart :chartdata="chartData"  :options="chartOptions"/>
-          <List :objects="objects"></List>
+
+        <Stats v-if="component == 'Stats'" :chartdata="chartData"  :options="{}"></Stats>
+        <List v-if="component == 'List'" :objects="objects"></List>
 
 
         <Message v-bind:message="currentMessage" v-bind:onClose="closeMessage"></Message>
@@ -66,7 +64,26 @@ export default {
       feature: [],
       image: "./assets/question.png",
       info: false,
-      component: 'List'
+      component: 'List',
+      isActive: true,
+    }
+  },
+
+  computed: {
+    chartData() {
+      let data = this.objects
+      .filter(elem => elem.speed != "--")
+      .sort((a, b) => b.speed - a.speed)
+      .slice(0, 5);
+      return {
+        labels: data.map(elem => elem.name),
+        datasets: [{
+          label: "bla",
+          backgroundColor: 'rgb(255, 99, 132)',
+          borderColor: 'rgb(255, 99, 132)',
+          data: data.map(elem => elem.speed)
+        }]
+      }
     }
   },
 
@@ -242,10 +259,9 @@ export default {
             }
 
          let to = session.getServerTime(); // get ServerTime, it will be end time
-         to = to * 1000;
          let from = new Date();
          from.setHours(8, 0, 0);
-         from = from.getTime();
+         from = Math.round(from.getTime() / 1000);
          from = to - from;
          let history = elem.getIgnitionHistory(1, from, to, 0, null, function(code, result) {
           if (code) {
@@ -305,6 +321,7 @@ ul {
 
 .main-header {
   background-color: #078ff0;
+  padding-bottom: 10px;
 }
 
 .main-header__container {
@@ -409,9 +426,10 @@ ul {
  font-weight: 700;
  background-color: #078ff0;
  border: none;
+ outline: none;
 }
 
-.screen-controls__btn--active {
+.active {
   text-decoration: underline;
   font-size: 22px;
 }

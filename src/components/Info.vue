@@ -5,7 +5,7 @@
       The list of objects is a table that contains relevant information on the objects. The following parameters are presented:
        plate number, speed, mileage, daily mileage, current position, fuel level, temperature, ignition state, first time ignition start of the day,
      current idling time, GPS status, vehicle status. </p>
-     <p class="info__text">The information in the application is updated every minute. The beginning of the working day is taken at 8 a.m.</p>
+     <p class="info__text">The information is updated every minute. The beginning of the working day is taken at 8 a.m.</p>
 
     <table class="info__table">
       <tr>
@@ -146,7 +146,8 @@ export default {
 
 .popup__close {
   margin-bottom: 20px;
-  padding: 15px 10px;
+  padding: 10px;
+  border-radius: 22px;
   box-sizing: border-box;
   font-size: 18px;
   width: 200px;

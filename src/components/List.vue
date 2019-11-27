@@ -26,14 +26,12 @@
         <td>{{object.plateNumber}}</td>
         <td class="units__table--message">{{object.lastMessage}}</td>
         <td class="units__table--position">{{object.address}}</td>
-        <td>{{object.speed}}</td>
+        <td v-bind:class="getClass(object.speed)">{{object.speed}}</td>
         <td>{{object.mileageCounter}}</td>
         <td>{{object.dayMileage}}</td>
-
-
-        <td>{{object.fuelLevel}}</td>
-        <td>{{object.temperatureLevel}}</td>
-        <td>{{object.engineLevel}}</td>
+        <td v-bind:class="getClass(object.fuelLevel)">{{object.fuelLevel}}</td>
+        <td v-bind:class="getClass(object.temperatureLevel)">{{object.temperatureLevel}}</td>
+        <td v-bind:class="getClass(object.engineLevel)">{{object.engineLevel}}</td>
         <td></td>
         <td>{{object.customFields}}</td>
         <td>{{object.canMileageLevel}}</td>
@@ -65,6 +63,20 @@ export default {
 
     }
   },
+  methods: {
+    getClass(value) {
+      if (Number.isFinite(value) || value == "off") {
+         return "black";
+       }
+      if (value == "on") {
+        return "green";
+      }
+
+      if (value == "N/A" || "N/S") {
+        return "gray";
+      }
+    }
+  },
   computed: {
     getTotalCount: function () {
       return this.objects.length;
@@ -74,6 +86,20 @@ export default {
 </script>
 
 <style>
+
+.black {
+  color: #000;
+}
+
+.gray {
+  color: #A4A4A4;
+}
+
+.green {
+  color: #01DF01;
+  font-weight: 700;
+}
+
 .units__table {
   border-collapse: collapse;
   width: 100%;
@@ -117,11 +143,4 @@ export default {
   text-align: left;
 }
 
-.units__table .units__table--name {
-  text-align: left
-}
-
-.units__table .units__table--message {
-  text-align: left;
-}
 </style>

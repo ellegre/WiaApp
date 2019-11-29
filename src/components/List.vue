@@ -17,7 +17,7 @@
         <th>Ignition, on/off</th>
         <th>Ignition first start</th>
         <th>Current idling time</th>
-        <th>GPS status</th>
+        <th>Moving state</th>
       </tr>
       <tr v-for="(object, index) in objects">
         <td>{{index + 1}}</td>

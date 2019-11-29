@@ -1,10 +1,10 @@
-
 <script>
   import { Bar, mixins } from 'vue-chartjs'
 
 
  export default {
     extends: Bar,
+
     props:  {
       chartdata: {
       type: Object,

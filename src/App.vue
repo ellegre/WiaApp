@@ -17,8 +17,10 @@
     </header>
     <main class="page-main">
       <div class="page-main__container container">
-
-        <Stats v-if="component == 'Stats'" :chartdata="chartData"  :options="{}"></Stats>
+        <div v-if="component == 'Stats'" class="charts-container">
+          <Stats   :chartdata="chartData"  :options="chartOptions"></Stats>
+          <ChartTemperature  :chartdata="chartData"  :options="chartOptions"></ChartTemperature>
+        </div>
         <List v-if="component == 'List'" :objects="objects"></List>
 
 
@@ -36,6 +38,7 @@ import Stats from './components/Stats'
 import Auth from './components/Auth'
 import Message from './components/Message'
 import Info from './components/Info'
+import ChartTemperature from './components/ChartTemperature'
 
 
 const session = wialon.core.Session.getInstance();
@@ -49,11 +52,11 @@ export default {
     'Auth': Auth,
     'Stats': Stats,
     'Message': Message,
-    'Info': Info
+    'Info': Info,
+    'ChartTemperature': ChartTemperature
   },
 
   data () {
-
     return {
       token: null,
       user: {
@@ -75,18 +78,28 @@ export default {
       .filter(elem => elem.speed != "--")
       .sort((a, b) => b.speed - a.speed)
       .slice(0, 5);
+
       return {
         labels: data.map(elem => elem.name),
         datasets: [{
-          label: "bla",
+          label: "Speed, km/h",
           backgroundColor: 'rgb(255, 99, 132)',
           borderColor: 'rgb(255, 99, 132)',
           data: data.map(elem => elem.speed)
         }]
       }
+    },
+    chartOptions() {
+      return {
+        title: {
+          display: true,
+          text: 'Top-5 vehicles by speed',
+          fontSize: 22,
+          padding: 20
+        }
+      }
     }
   },
-
   methods: {
     updateToken(token) {
       this.token = token;
@@ -150,7 +163,6 @@ export default {
       this.currentMessage = null;
     },
     showInfo() {
-      console.log(`hhhhh`)
       this.info = true;
     },
     closeInfo() {
@@ -187,6 +199,114 @@ export default {
         const partialData = data.items.map(elem => {
           const sensors = elem.getSensors();
           const profileData = elem.getProfileFields();
+
+
+
+        // Execute report
+
+        const res = session.getItems("avl_resource");
+        console.log("ресурсы", res);
+
+
+
+        function getUnitMovingState(elem) {
+          let info = {
+            isMoving: false, // by real-time sensor or speed
+            isIgnitionOn: null, // Boolean | null
+
+            isLbs: false,
+            isStale: true, // expired `unitMovingTimeout`
+
+            isPositionPresent: false,
+            isIgnitionPresent: false,
+            isRealTimeSensorPresent: false
+          };
+
+          let pos = elem.getPosition();
+
+          if (!pos) {
+            return info;
+          }
+
+          info.isPositionPresent = true;
+
+          //// LBS
+          info.isLbs = !!(
+            pos.s <= 0 &&
+            typeof pos.f === "number" &&
+            wialon.util.Number.and(pos.f, wialon.item.Unit.dataMessageFlag.lbsFlag)
+          );
+
+          let serverTime = session.getServerTime();
+          let currentUser = session.getCurrUser();
+
+          //// Stale position
+          let unitMovingTimeout = parseInt(
+            currentUser.getCustomProperty("mu_move_durr", "3600"),
+            10
+          );
+          if (!isFinite(unitMovingTimeout)) unitMovingTimeout = 3600;
+
+          info.isStale = unitMovingTimeout < serverTime - pos.t;
+
+          //// Sensors
+          let sensors = elem.getSensors();
+
+          let realTimeSensor, ignitionSensor;
+
+          for (let prop in sensors)
+            if (sensors[prop].t === "real-time motion sensor") {
+              realTimeSensor = sensors[prop];
+              break;
+            }
+          for (let prop in sensors)
+            if (sensors[prop].t === "engine operation") {
+              ignitionSensor = sensors[prop];
+              break;
+            }
+
+          //// Ignition
+          let ignitionSensorValue = null;
+
+          if (ignitionSensor) {
+            ignitionSensorValue = elem.calculateSensorValue(ignitionSensor,elem.getLastMessage());
+
+            if (typeof ignitionSensorValue === "number") {
+              info.isIgnitionPresent = true;
+            }
+          }
+
+          info.isIgnitionOn = !!ignitionSensorValue;
+
+          //// Moving state
+          let realTimeSensorValue = null;
+
+          if (realTimeSensor) {
+            realTimeSensorValue = elem.calculateSensorValue(realTimeSensor, elem.getLastMessage());
+
+            if (typeof realTimeSensorValue === "number") {
+              info.isRealTimeSensorPresent = true;
+            }
+          }
+
+          if (typeof realTimeSensorValue === "number") {
+            info.isMoving = realTimeSensorValue !== 0;
+          } else {
+            info.isMoving = pos.s > 0;
+          }
+
+          return info;
+        }
+
+
+        console.log( getUnitMovingState(elem))
+
+
+
+
+
+
+
 
           // Getting unit plate number
           const plateNumbers = Object.values(profileData).find(value => value.n === "registration_plate");
@@ -402,8 +522,9 @@ ul {
   width: 100%;
 }
 
-.fuel {
-  background-color: white;
+.charts-container {
+  width: 400px;
+  height: 300px;
 }
 
 .visually-hidden {

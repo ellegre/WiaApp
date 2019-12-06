@@ -18,8 +18,18 @@
     <main class="page-main">
       <div class="page-main__container container">
         <div v-if="component == 'Stats'" class="charts-container">
-          <Stats   :chartdata="chartData"  :options="chartOptions"></Stats>
-          <ChartTemperature  :chartdata="chartData"  :options="chartOptions"></ChartTemperature>
+          <div class="stats-container">
+            <Stats   :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></Stats>
+          </div>
+          <div class="stats-container">
+           <Stats   :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></Stats>
+          </div>
+          <div class="stats-container">
+           <ChartTemperature  :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></ChartTemperature>
+          </div>
+          <div class="stats-container">
+            <Stats   :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></Stats>
+           </div>
         </div>
         <List v-if="component == 'List'" :objects="objects"></List>
 
@@ -73,7 +83,7 @@ export default {
   },
 
   computed: {
-    chartData() {
+    chartDataSpeed() {
       let data = this.objects
       .filter(elem => elem.speed != "--")
       .sort((a, b) => b.speed - a.speed)
@@ -89,7 +99,7 @@ export default {
         }]
       }
     },
-    chartOptions() {
+    chartOptionsSpeed() {
       return {
         title: {
           display: true,
@@ -297,15 +307,6 @@ export default {
 
           return info;
         }
-
-
-        console.log( getUnitMovingState(elem))
-
-
-
-
-
-
 
 
           // Getting unit plate number
@@ -522,9 +523,16 @@ ul {
   width: 100%;
 }
 
+
 .charts-container {
-  width: 400px;
-  height: 300px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.stats-container {
+  width: 500px;
+
 }
 
 .visually-hidden {

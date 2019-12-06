@@ -33,17 +33,9 @@
         <td v-bind:class="getClass(object.temperatureLevel)">{{object.temperatureLevel}}</td>
         <td v-bind:class="getClass(object.engineLevel)">{{object.engineLevel}}</td>
         <td></td>
-        <td>{{object.customFields}}</td>
-        <td>{{object.canMileageLevel}}</td>
-        <td>{{object.canAirTemperature}}</td>
-        <td>{{object.canIgnition}}</td>
-        <td>{{object.canFuelLevel}}</td>
-        <!--<td v-for="data in object.sensors">
-          {{(data.t)}}
-        </td>-->
+        <td></td>
+        <td v-bind:class="getClass(object.movingState)">{{object.movingState}}</td>
       </tr>
-
-
     </table>
 
     <span class="units__span">Total units count: {{getTotalCount}}</span>
@@ -65,6 +57,10 @@ export default {
   },
   methods: {
     getClass(value) {
+
+      if (value == "YES") {
+        return "green"
+      }
       if (Number.isFinite(value) || value == "off") {
          return "black";
        }

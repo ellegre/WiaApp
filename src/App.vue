@@ -22,13 +22,13 @@
             <Stats   :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></Stats>
           </div>
           <div class="stats-container">
-           <Stats   :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></Stats>
+           <PieChart  :chartdata="chartDataPie"  :options="chartOptionsPie"></PieChart>
           </div>
           <div class="stats-container">
-           <ChartTemperature  :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></ChartTemperature>
+           <Stats :chartdata="chartDataTemperature"  :options="chartOptionsTemperature"></Stats>
           </div>
           <div class="stats-container">
-            <Stats   :chartdata="chartDataSpeed"  :options="chartOptionsSpeed"></Stats>
+            <Stats   :chartdata="chartDataDailyMileage"  :options="chartOptionsDailyMileage"></Stats>
            </div>
         </div>
         <List v-if="component == 'List'" :objects="objects"></List>
@@ -48,7 +48,8 @@ import Stats from './components/Stats'
 import Auth from './components/Auth'
 import Message from './components/Message'
 import Info from './components/Info'
-import ChartTemperature from './components/ChartTemperature'
+import LineChart from './components/LineChart'
+import PieChart from './components/PieChart'
 
 
 const session = wialon.core.Session.getInstance();
@@ -63,7 +64,8 @@ export default {
     'Stats': Stats,
     'Message': Message,
     'Info': Info,
-    'ChartTemperature': ChartTemperature
+    'LineChart': LineChart,
+    'PieChart': PieChart
   },
 
   data () {
@@ -108,7 +110,85 @@ export default {
           padding: 20
         }
       }
-    }
+    },
+    chartDataPie() {
+      let data = this.objects
+      .filter(elem => elem.speed != "--")
+      .sort((a, b) => b.speed - a.speed)
+      .slice(0, 5);
+
+      return {
+        labels: data.map(elem => elem.name),
+        datasets: [{
+          label: "Speed, km/h",
+          backgroundColor: ['#64FE2E','#BDBDBD'],
+          borderColor: '#E6E6E6',
+          data: data.map(elem => elem.speed)
+        }]
+      }
+    },
+    chartOptionsPie() {
+      return {
+        title: {
+          display: true,
+          text: 'Objects in motion to the total number of objects',
+          fontSize: 22,
+          padding: 20
+        }
+      }
+    },
+    chartDataTemperature() {
+      let data = this.objects
+      .filter(elem => elem.speed != "--")
+      .sort((a, b) => b.speed - a.speed)
+      .slice(0, 5);
+
+      return {
+        labels: data.map(elem => elem.name),
+        datasets: [{
+          label: "Temperature, °C",
+          backgroundColor: '#FFBF00',
+          borderColor: '#E6E6E6',
+          data: data.map(elem => elem.speed)
+        }]
+      }
+    },
+    chartOptionsTemperature() {
+      return {
+        title: {
+          display: true,
+          text: 'Top-5 by temperature',
+          fontSize: 22,
+          padding: 20
+        }
+      }
+    },
+    chartDataDailyMileage() {
+      let data = this.objects
+      .filter(elem => elem.speed != "--")
+      .sort((a, b) => b.speed - a.speed)
+      .slice(0, 5);
+
+      return {
+        labels: data.map(elem => elem.name),
+        datasets: [{
+          label: "Mileage, km",
+          backgroundColor: '#81BEF7',
+          borderColor: 'rgb(255, 99, 132)',
+          data: data.map(elem => elem.speed)
+        }]
+      }
+    },
+    chartOptionsDailyMileage() {
+      return {
+        title: {
+          display: true,
+          text: 'Top-5 vehicles by daily mileage',
+          fontSize: 22,
+          padding: 20
+        }
+      }
+    },
   },
   methods: {
     updateToken(token) {

@@ -1,8 +1,6 @@
 <template>
   <div v-if="message" class="message popup">
-    <img src="../assets/sponge.png" class="popup__avatar" width="45" height="45" alt="Изображение">
     <p class="message__text">{{message}}</p>
-    <button v-on:click="onClose" type="button" class="popup__close">Close</button>
   </div>
 </template>
 
@@ -46,8 +44,8 @@ export default {
   font-size: 18px;
   width: 180px;
   cursor: pointer;
-  border-radius: 22px;
   background-color: #E3F6CE;
+  border-radius: 22px;
 }
 
 .popup__close:hover,

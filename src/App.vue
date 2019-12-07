@@ -36,6 +36,7 @@
 
         <Message v-bind:message="currentMessage" v-bind:onClose="closeMessage"></Message>
         <Info v-bind:info="info" v-bind:onClose="closeInfo"></Info>
+        <ShortMessage></ShortMessage>
       </div>
     </main>
   </div>
@@ -50,6 +51,7 @@ import Message from './components/Message'
 import Info from './components/Info'
 import LineChart from './components/LineChart'
 import PieChart from './components/PieChart'
+import ShortMessage from './components/ShortMessage'
 
 
 const session = wialon.core.Session.getInstance();
@@ -65,7 +67,8 @@ export default {
     'Message': Message,
     'Info': Info,
     'LineChart': LineChart,
-    'PieChart': PieChart
+    'PieChart': PieChart,
+    'ShortMessage': ShortMessage
   },
 
   data () {

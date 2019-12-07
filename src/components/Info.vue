@@ -150,7 +150,7 @@ export default {
   border-radius: 22px;
   box-sizing: border-box;
   font-size: 18px;
-  width: 200px;
+  width: 180px;
   cursor: pointer;
   background-color: 0099ff;
 }

@@ -6,7 +6,8 @@
     data () {
       return {
         src: "https://hosting.wialon.com/login.html?redirect_uri="
-        + encodeURIComponent("http://localhost:8080/auth.html")
+        + encodeURIComponent("http://localhost:8080/auth.html") + "&css_url="
+        + encodeURIComponent("http://localhost:8080/src/assets/css/login-form.css")
       }
     },
     props: {
@@ -32,7 +33,8 @@
     margin-left: -300px;
     margin-top: -220px;
     width: 600px;
-    height: 440px;
+    min-height: 420px;
+    border: none;
   }
 
   .wialon__form {

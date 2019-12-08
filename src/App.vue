@@ -58,6 +58,175 @@ const session = wialon.core.Session.getInstance();
 const UPDATE_INTERVAL = 60000; //time interval to refresh data, ms
 
 
+function getUnitMovingState(elem) {
+  let info = {
+    isMoving: false, // by real-time sensor or speed
+    isIgnitionOn: null, // Boolean | null
+
+    isLbs: false,
+    isStale: true, // expired `unitMovingTimeout`
+
+    isPositionPresent: false,
+    isIgnitionPresent: false,
+    isRealTimeSensorPresent: false
+  };
+
+  let pos = elem.getPosition();
+
+  if (!pos) {
+    return "--";
+  }
+
+  info.isPositionPresent = true;
+
+  // LBS
+  info.isLbs = !!(
+    pos.s <= 0 &&
+    typeof pos.f === "number" &&
+    wialon.util.Number.and(pos.f, wialon.item.Unit.dataMessageFlag.lbsFlag)
+  );
+
+  let serverTime = session.getServerTime();
+  let currentUser = session.getCurrUser();
+
+  // Stale position
+  let unitMovingTimeout = parseInt(
+    currentUser.getCustomProperty("mu_move_durr", "3600"),
+    10
+  );
+  if (!isFinite(unitMovingTimeout)) unitMovingTimeout = 3600;
+
+  info.isStale = unitMovingTimeout < serverTime - pos.t;
+
+  // Sensors
+  let sensors = elem.getSensors();
+
+  let realTimeSensor, ignitionSensor;
+
+  for (let prop in sensors)
+    if (sensors[prop].t === "real-time motion sensor") {
+      realTimeSensor = sensors[prop];
+      break;
+    }
+  for (let prop in sensors)
+    if (sensors[prop].t === "engine operation") {
+      ignitionSensor = sensors[prop];
+      break;
+    }
+
+  // Ignition
+  let ignitionSensorValue = null;
+
+  if (ignitionSensor) {
+    ignitionSensorValue = elem.calculateSensorValue(ignitionSensor,elem.getLastMessage());
+
+    if (typeof ignitionSensorValue === "number") {
+      info.isIgnitionPresent = true;
+    }
+  }
+
+  info.isIgnitionOn = !!ignitionSensorValue;
+
+  // Moving state
+  let realTimeSensorValue = null;
+
+  if (realTimeSensor) {
+    realTimeSensorValue = elem.calculateSensorValue(realTimeSensor, elem.getLastMessage());
+
+    if (typeof realTimeSensorValue === "number") {
+      info.isRealTimeSensorPresent = true;
+    }
+  }
+
+  if (typeof realTimeSensorValue === "number") {
+    info.isMoving = realTimeSensorValue !== 0;
+  } else {
+    info.isMoving = pos.s > 0;
+  }
+
+  let movingState;
+
+  if (info.isMoving) {
+    movingState = "YES";
+  }
+  else {
+    movingState = "NO";
+  }
+  return movingState;
+}
+
+function getPlateNumber(profileData) {
+  let plateNumbers = Object.values(profileData).find(value => value.n === "registration_plate");
+  let plateNumber = "--";
+  if (plateNumbers) {
+    plateNumber = Object.values(plateNumbers)[2];
+  }
+  return plateNumber;
+}
+
+function getFuelLevel(elem) {
+  const fuelLevelSensor = Object.values(elem.getSensors()).find(value => value.t === "fuel level");
+  let fuelLevel = "N/S";
+  if (fuelLevelSensor) {
+    fuelLevel = (elem.calculateSensorValue(fuelLevelSensor, elem.getLastMessage()));
+    if (fuelLevel === -348201.3876) {
+      fuelLevel = "N/A";
+    }
+    if (fuelLevel !== "N/A" && fuelLevel !== "N/S" ) {
+      fuelLevel = Math.round(fuelLevel);
+    }
+  }
+  return fuelLevel;
+}
+
+function getTemperatureLevel(elem) {
+  const temperatureSensor = Object.values(elem.getSensors()).find(value => value.t === "temperature");
+  let temperatureLevel = "N/S";
+  if (temperatureSensor) {
+    temperatureLevel = (elem.calculateSensorValue(temperatureSensor, elem.getLastMessage()));
+    if (temperatureLevel === -348201.3876) {
+      temperatureLevel = "N/A";
+    }
+    if (temperatureLevel !== "N/A" && temperatureLevel !== "N/S" ) {
+      temperatureLevel = Math.round(temperatureLevel);
+    }
+  }
+  return temperatureLevel;
+}
+
+function getMileageLevel(elem) {
+  const mileageSensor = Object.values(elem.getSensors()).find(value => value.t === "mileage");
+  let mileageLevel = "N/S";
+    if (mileageSensor) {
+      mileageLevel = (elem.calculateSensorValue(mileageSensor, elem.getLastMessage()));
+      if (mileageLevel === -348201.3876) {
+        mileageLevel = "N/A";
+      }
+      if (mileageLevel !== "N/A" && mileageLevel !== "N/S" ) {
+        mileageLevel = Math.round(mileageLevel);
+      }
+    }
+  return mileageLevel;
+}
+
+function getEngineLevel(elem) {
+  const engineSensor = Object.values(elem.getSensors()).find(value => value.t === "engine operation");
+  let engineLevel = "N/S";
+  if (engineSensor) {
+    engineLevel = (elem.calculateSensorValue(engineSensor, elem.getLastMessage()));
+    if (engineLevel === -348201.3876) {
+      engineLevel = "N/A";
+    }
+    if (engineLevel === 0) {
+      engineLevel = "off";
+    }
+    if (engineLevel === 1) {
+      engineLevel = "on";
+    }
+  }
+  return engineLevel;
+}
+
 
 export default {
   components: {
@@ -267,7 +436,6 @@ export default {
         propName: "sys_name",
         propValueMask: "*",
         sortType: "sys_name",
-
       };
 
       const dataFlags = wialon.item.Item.dataFlag.base |
@@ -278,7 +446,6 @@ export default {
                       wialon.item.Item.dataFlag.profileFields |
                       wialon.item.Resource.dataFlag.reports  |
                       wialon.item.Unit.dataFlag.restricted
-
 
 
       session.searchItems(searchSpec, true, dataFlags, 0, 0, (code, data) => {
@@ -293,189 +460,32 @@ export default {
           const sensors = elem.getSensors();
           const profileData = elem.getProfileFields();
 
+          // Get vehicle moving state
+          const movingState = getUnitMovingState(elem);
 
+          // Get unit plate number
+          const plateNumber = getPlateNumber(profileData);
 
-        // Execute report
-
-        const res = session.getItems("avl_resource");
-        console.log("ресурсы", res);
-
-
-
-        function getUnitMovingState(elem) {
-          let info = {
-            isMoving: false, // by real-time sensor or speed
-            isIgnitionOn: null, // Boolean | null
-
-            isLbs: false,
-            isStale: true, // expired `unitMovingTimeout`
-
-            isPositionPresent: false,
-            isIgnitionPresent: false,
-            isRealTimeSensorPresent: false
-          };
-
+          // Get an array of coordinates of all units for later getting current unit position (address)
           let pos = elem.getPosition();
-
-          if (!pos) {
-            return info;
+          let locationIndex = null;
+          if(pos) {
+            locationsToGet.push({lon:pos.x, lat:pos.y});
+            locationIndex = locationsToGet.length - 1;
           }
 
-          info.isPositionPresent = true;
+          //Get fuel sensor value
+          const fuelLevel = getFuelLevel(elem);
 
-          //// LBS
-          info.isLbs = !!(
-            pos.s <= 0 &&
-            typeof pos.f === "number" &&
-            wialon.util.Number.and(pos.f, wialon.item.Unit.dataMessageFlag.lbsFlag)
-          );
+          //Get temperature sensor value
+          const temperatureLevel = getTemperatureLevel(elem);
 
-          let serverTime = session.getServerTime();
-          let currentUser = session.getCurrUser();
+          //Get total mileage sensor value
+          const mileageLevel = getMileageLevel(elem);
 
-          //// Stale position
-          let unitMovingTimeout = parseInt(
-            currentUser.getCustomProperty("mu_move_durr", "3600"),
-            10
-          );
-          if (!isFinite(unitMovingTimeout)) unitMovingTimeout = 3600;
+          //Get engine sensor value
+          const engineLevel = getEngineLevel(elem);
 
-          info.isStale = unitMovingTimeout < serverTime - pos.t;
-
-          //// Sensors
-          let sensors = elem.getSensors();
-
-          let realTimeSensor, ignitionSensor;
-
-          for (let prop in sensors)
-            if (sensors[prop].t === "real-time motion sensor") {
-              realTimeSensor = sensors[prop];
-              break;
-            }
-          for (let prop in sensors)
-            if (sensors[prop].t === "engine operation") {
-              ignitionSensor = sensors[prop];
-              break;
-            }
-
-          //// Ignition
-          let ignitionSensorValue = null;
-
-          if (ignitionSensor) {
-            ignitionSensorValue = elem.calculateSensorValue(ignitionSensor,elem.getLastMessage());
-
-            if (typeof ignitionSensorValue === "number") {
-              info.isIgnitionPresent = true;
-            }
-          }
-
-          info.isIgnitionOn = !!ignitionSensorValue;
-
-          //// Moving state
-          let realTimeSensorValue = null;
-
-          if (realTimeSensor) {
-            realTimeSensorValue = elem.calculateSensorValue(realTimeSensor, elem.getLastMessage());
-
-            if (typeof realTimeSensorValue === "number") {
-              info.isRealTimeSensorPresent = true;
-            }
-          }
-
-          if (typeof realTimeSensorValue === "number") {
-            info.isMoving = realTimeSensorValue !== 0;
-          } else {
-            info.isMoving = pos.s > 0;
-          }
-
-          return info;
-        }
-
-        // Getting vehicle moving state
-        const unitMoveingState = getUnitMovingState(elem);
-        let movingState;
-        let to = session.getServerTime(); // get ServerTime, it will be end time
-        let from = new Date();
-        from.setHours(0, 10, 0);
-        from = Math.round(from.getTime() / 1000); //get time 10 min earlier than current server time, in seconds
-
-
-        if (unitMoveingState.isMoving && elem.getPosition().t > from) {
-          movingState = "YES"
-        } else {
-          movingState = "NO"
-        }
-
-
-        // Getting unit plate number
-        const plateNumbers = Object.values(profileData).find(value => value.n === "registration_plate");
-        let plateNumber = "--";
-        if (plateNumbers) {
-          plateNumber = Object.values(plateNumbers)[2];
-        }
-
-        // Getting an array of coordinates of all units for later get current unit position
-        let pos = elem.getPosition();
-        let locationIndex = null;
-        if(pos) {
-          locationsToGet.push({lon:pos.x, lat:pos.y});
-          locationIndex = locationsToGet.length - 1;
-        }
-
-        //getting fuel sensor value
-        const fuelLevelSensor = Object.values(sensors).find(value => value.t === "fuel level");
-        let fuelLevel = "N/S";
-        if (fuelLevelSensor) {
-          fuelLevel = (elem.calculateSensorValue(fuelLevelSensor, elem.getLastMessage()));
-          if (fuelLevel === -348201.3876) {
-            fuelLevel = "N/A";
-          }
-          if (fuelLevel !== "N/A" && fuelLevel !== "N/S" ) {
-            fuelLevel = Math.round(fuelLevel);
-          }
-        }
-
-        //getting temperature sensor value
-        const temperatureSensor = Object.values(sensors).find(value => value.t === "temperature");
-          let temperatureLevel = "N/S";
-          if (temperatureSensor) {
-            temperatureLevel = (elem.calculateSensorValue(temperatureSensor, elem.getLastMessage()));
-            if (temperatureLevel === -348201.3876) {
-              temperatureLevel = "N/A";
-            }
-            if (temperatureLevel !== "N/A" && temperatureLevel !== "N/S" ) {
-              temperatureLevel = Math.round(temperatureLevel);
-            }
-          }
-
-        //getting total mileage sensor value
-        const mileageSensor = Object.values(sensors).find(value => value.t === "mileage");
-        let mileageLevel = "N/S";
-          if (mileageSensor) {
-            mileageLevel = (elem.calculateSensorValue(mileageSensor, elem.getLastMessage()));
-            if (mileageLevel === -348201.3876) {
-              mileageLevel = "N/A";
-            }
-            if (mileageLevel !== "N/A" && mileageLevel !== "N/S" ) {
-              mileageLevel = Math.round(mileageLevel);
-            }
-          }
-
-        //getting engine sensor value
-        const engineSensor = Object.values(sensors).find(value => value.t === "engine operation");
-        let engineLevel = "N/S";
-          if (engineSensor) {
-            engineLevel = (elem.calculateSensorValue(mileageSensor, elem.getLastMessage()));
-            if (engineLevel === -348201.3876) {
-              engineLevel = "N/A";
-            }
-            if (engineLevel === 0) {
-              engineLevel = "off";
-            }
-            if (engineLevel === 1) {
-              engineLevel = "on";
-            }
-          }
           return {
             lastMessage: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "--",
             speed: elem.getPosition()? elem.getPosition().s: "--",
@@ -490,6 +500,7 @@ export default {
             engineLevel,
             plateNumber,
             movingState,
+            movingToday: "N/A"
           }
         });
         wialon.util.Gis.getLocations(locationsToGet, (code, addresses) => {

@@ -34,7 +34,7 @@
         <td v-bind:class="getClass(object.engineLevel)">{{object.engineLevel}}</td>
         <td></td>
         <td></td>
-        <td v-bind:class="getClass(object.movingState)">{{object.movingState}}</td>
+        <td v-bind:class="getMovingState(object.movingState)">{{object.movingState}}</td>
       </tr>
     </table>
 
@@ -57,10 +57,6 @@ export default {
   },
   methods: {
     getClass(value) {
-
-      if (value == "YES") {
-        return "green"
-      }
       if (Number.isFinite(value) || value == "off") {
          return "black";
        }
@@ -70,6 +66,11 @@ export default {
 
       if (value == "N/A" || "N/S") {
         return "gray";
+      }
+    },
+    getMovingState(value) {
+      if (value == "YES") {
+        return "green";
       }
     }
   },

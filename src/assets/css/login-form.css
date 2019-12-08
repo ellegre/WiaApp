@@ -1,12 +1,11 @@
-input {
-
-}
 body {
   background-color: #078ff0;
 }
+
 .content .form-container {
   background: transparent;
 }
+
 .header {
   background: transparent;
   position: relative;
@@ -21,8 +20,7 @@ body {
   font-size: 24px;
   font-family: Arial;
   text-transform: uppercase;
-  color: #DC143C;
-  text-shadow: white 2px 3px 3px;
+  color: #fff;
 }
 
 .header::before {
@@ -39,4 +37,8 @@ body {
 .title .app-name, .title .dev-name,
 .footer > .toggle-text {
   color: #fff;
+}
+
+#auth-form input[type="submit"] {
+  border: 1px solid #616161;
 }

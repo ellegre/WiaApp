@@ -194,11 +194,11 @@ function getTemperatureLevel(elem) {
   return temperatureLevel;
 }
 
-function getMileageLevel(elem) {
+function getMileageLevel(elem, message) {
   const mileageSensor = Object.values(elem.getSensors()).find(value => value.t === "mileage");
   let mileageLevel = "N/S";
     if (mileageSensor) {
-      mileageLevel = (elem.calculateSensorValue(mileageSensor, elem.getLastMessage()));
+      mileageLevel = (elem.calculateSensorValue(mileageSensor, message || elem.getLastMessage()));
       if (mileageLevel === -348201.3876) {
         mileageLevel = "N/A";
       }
@@ -226,7 +226,6 @@ function getEngineLevel(elem) {
   }
   return engineLevel;
 }
-
 
 export default {
   components: {
@@ -362,6 +361,7 @@ export default {
       }
     },
   },
+
   methods: {
     updateToken(token) {
       this.token = token;
@@ -382,7 +382,6 @@ export default {
       });
     },
     logout() {
-
       wialon.core.Session.getInstance().logout(
         (code) => { // logout callback
           if (code) {
@@ -455,6 +454,7 @@ export default {
         }
         console.log(data);
         const locationsToGet = [];
+        let locationPromise;
 
         const partialData = data.items.map(elem => {
           const sensors = elem.getSensors();
@@ -481,12 +481,47 @@ export default {
           const temperatureLevel = getTemperatureLevel(elem);
 
           //Get total mileage sensor value
-          const mileageLevel = getMileageLevel(elem);
+          const mileageLevel = getMileageLevel(elem, elem.getLastMessage());
 
           //Get engine sensor value
           const engineLevel = getEngineLevel(elem);
 
+          //Get mileage sensor value
+          const sensorMileage = getMileageLevel(elem);
+
+          const to = session.getServerTime();
+          let from = (new Date().setHours(8, 0, 0));
+          from = Math.round(from / 1000);
+
+          session.getMessagesLoader()
+            .loadInterval(elem.getId(), from, to, 0, 0, 1,
+              (code, data) => {
+                if (code) {
+                  return this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`)
+                }
+                console.log("сообщение", data)
+                const message = data.messages[0];
+                if (!message) {
+                  return;
+                }
+                const previousMileage = getMileageLevel(elem, message);
+                let difference = sensorMileage - previousMileage;
+                  if (difference == NaN) {
+                    difference == "N/A";
+                  }
+
+                locationPromise.then(() => {
+                  const object = this.objects.find(obj => obj.id == elem.getId());
+                  if (!object) {
+                  return;
+                  }
+                  object.dailyMileage = difference;
+                });
+              }
+            );
+
           return {
+            id: elem.getId(),
             lastMessage: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "--",
             speed: elem.getPosition()? elem.getPosition().s: "--",
             name: elem.getName(),
@@ -497,27 +532,38 @@ export default {
             fuelLevel,
             temperatureLevel,
             mileageLevel,
+            sensorMileage,
             engineLevel,
             plateNumber,
             movingState,
-            movingToday: "N/A"
+            dailyMileage: "N/A"
           }
         });
-        wialon.util.Gis.getLocations(locationsToGet, (code, addresses) => {
-          if (code) {
-            this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
-          } else {
-            const finalData = partialData.map(elem => {
-              if (elem.locationIndex !== null) {
-                elem.address = addresses[elem.locationIndex];
-              } else {
-                elem.address = "--"
-              }
-              return elem;
-            });
-            this.objects = finalData;
-          }
-        });
+        locationPromise = new Promise((resolve, reject) => {
+          wialon.util.Gis.getLocations(locationsToGet, (code, addresses) => {
+            if (code) {
+              reject(code);
+            } else {
+              resolve(addresses)
+            }
+          })
+        })
+
+        locationPromise
+        .then(addresses => {
+          const finalData = partialData.map(elem => {
+            if (elem.locationIndex !== null) {
+              elem.address = addresses[elem.locationIndex];
+            } else {
+              elem.address = "--"
+            }
+            return elem;
+          });
+          this.objects = finalData;
+        })
+        .catch(code => {
+          this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`);
+        })
       });
     }
   }
@@ -616,7 +662,6 @@ ul {
   width: 100%;
 }
 
-
 .charts-container {
   display: flex;
   flex-wrap: wrap;
@@ -625,7 +670,6 @@ ul {
 
 .stats-container {
   width: 500px;
-
 }
 
 .visually-hidden {

@@ -36,7 +36,10 @@
         <td v-bind:class="getClass(object.engineLevel)">{{object.engineLevel}}</td>
         <td></td>
         <td></td>
-        <td v-bind:class="getMovingState(object.movingState)">{{object.movingState}}</td>
+        <td v-bind:class="getMovingState(object.movingState)">
+          <img v-if="getSvgSrc(object.movingState)" :src="getSvgSrc(object.movingState)" width="20">
+          <span v-else>{{object.movingState}}</span>
+        </td>
       </tr>
     </table>
 
@@ -45,6 +48,8 @@
 </template>
 
 <script>
+import MovingState from './MovingState'
+
 export default {
   props: {
     objects: {
@@ -54,7 +59,7 @@ export default {
   },
   data () {
     return {
-
+      MovingState
     }
   },
   methods: {
@@ -73,6 +78,14 @@ export default {
     getMovingState(value) {
       if (value == "YES") {
         return "green";
+      }
+    },
+    getSvgSrc(value) {
+      if (value == MovingState.YES) {
+        return "./src/assets/arrow-green.png"
+      }
+      if (value == MovingState.NO) {
+        return "./src/assets/arrow-black.png"
       }
     }
   },

@@ -11,8 +11,8 @@
         </div>
       </div>
       <nav class="screen-controls container">
-        <button v-on:click="component = 'List'" v-bind:class="{active: isActive}" class="screen-controls__btn" id="table">Table</button>
-        <button v-on:click="component = 'Stats'" v-bind:class="{active: isActive}" class="screen-controls__btn" id="stat">Stats</button>
+        <button v-on:click="component = 'List'" v-bind:class="{active: component == 'List'}" class="screen-controls__btn" id="table">Table</button>
+        <button v-on:click="component = 'Stats'" v-bind:class="{active: component == 'Stats'}" class="screen-controls__btn" id="stat">Stats</button>
       </nav>
     </header>
     <main class="page-main">
@@ -28,7 +28,7 @@
            <Stats :chartdata="chartDataTemperature"  :options="chartOptionsTemperature"></Stats>
           </div>
           <div class="stats-container">
-            <Stats   :chartdata="chartDataDailyMileage"  :options="chartOptionsDailyMileage"></Stats>
+            <Stats   :chartdata="chartDataTotalMileage"  :options="chartOptionsTotalMileage"></Stats>
            </div>
         </div>
         <List v-if="component == 'List'" :objects="objects"></List>
@@ -56,6 +56,10 @@ import ShortMessage from './components/ShortMessage'
 
 const session = wialon.core.Session.getInstance();
 const UPDATE_INTERVAL = 60000; //time interval to refresh data, ms
+const MOVING_STATE = {
+  YES: "YES",
+  NO: "NO"
+}
 
 
 function getUnitMovingState(elem) {
@@ -147,10 +151,10 @@ function getUnitMovingState(elem) {
   let movingState;
 
   if (info.isMoving) {
-    movingState = "YES";
+    movingState = MOVING_STATE.YES;
   }
   else {
-    movingState = "NO";
+    movingState = MOVING_STATE.NO;
   }
   return movingState;
 }
@@ -283,18 +287,16 @@ export default {
       }
     },
     chartDataPie() {
-      let data = this.objects
-      .filter(elem => elem.speed != "--")
-      .sort((a, b) => b.speed - a.speed)
-      .slice(0, 5);
+      let movingObjectsCount = this.objects.filter(it => it.movingState == MOVING_STATE.YES).length;
+      let notMoningObjectsCount = this.objects.length - movingObjectsCount
 
       return {
-        labels: data.map(elem => elem.name),
+        labels: ["Moving", "Not moving"],
         datasets: [{
           label: "Objects, %",
           backgroundColor: ['#64FE2E','#BDBDBD'],
           borderColor: '#E6E6E6',
-          data: data.map(elem => elem.speed)
+          data: [movingObjectsCount, notMoningObjectsCount]
         }]
       }
     },
@@ -302,7 +304,7 @@ export default {
       return {
         title: {
           display: true,
-          text: 'Objects in motion',
+          text: 'Vehicles in motion',
           fontSize: 22,
           padding: 20
         }
@@ -310,8 +312,8 @@ export default {
     },
     chartDataTemperature() {
       let data = this.objects
-      .filter(elem => elem.speed != "--")
-      .sort((a, b) => b.speed - a.speed)
+      .filter(elem => elem.temperatureLevel !== "N/A" && elem.temperatureLevel !== "N/S" )
+      .sort((a, b) => b.temperatureLevel - a.temperatureLevel)
       .slice(0, 5);
 
       return {
@@ -320,7 +322,7 @@ export default {
           label: "Temperature, °C",
           backgroundColor: 'rgb(255, 99, 132)',
           borderColor: '#E6E6E6',
-          data: data.map(elem => elem.speed)
+          data: data.map(elem => elem.temperatureLevel)
         }]
       }
     },
@@ -334,10 +336,10 @@ export default {
         }
       }
     },
-    chartDataDailyMileage() {
+    chartDataTotalMileage() {
       let data = this.objects
-      .filter(elem => elem.speed != "--")
-      .sort((a, b) => b.speed - a.speed)
+      .filter(elem => elem.mileageCounter != "--")
+      .sort((a, b) => b.mileageCounter - a.mileageCounter)
       .slice(0, 5);
 
       return {
@@ -346,15 +348,15 @@ export default {
           label: "Mileage, km",
           backgroundColor: '#81BEF7',
           borderColor: 'rgb(255, 99, 132)',
-          data: data.map(elem => elem.speed)
+          data: data.map(elem => elem.mileageCounter)
         }]
       }
     },
-    chartOptionsDailyMileage() {
+    chartOptionsTotalMileage() {
       return {
         title: {
           display: true,
-          text: 'Top-5 vehicles by daily mileage',
+          text: 'Top-5 vehicles by total mileage',
           fontSize: 22,
           padding: 20
         }
@@ -499,7 +501,6 @@ export default {
                 if (code) {
                   return this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`)
                 }
-                console.log("сообщение", data)
                 const message = data.messages[0];
                 if (!message) {
                   return;
@@ -507,7 +508,7 @@ export default {
                 const previousMileage = getMileageLevel(elem, message);
                 let difference = sensorMileage - previousMileage;
                   if (difference == NaN) {
-                    difference == "N/A";
+                    return difference == "N/A";
                   }
 
                 locationPromise.then(() => {
@@ -515,19 +516,19 @@ export default {
                   if (!object) {
                   return;
                   }
-                  object.dailyMileage = difference;
-                });
+                object.dailyMileage = difference;
               }
             );
+              });
 
           return {
             id: elem.getId(),
-            lastMessage: elem.getPosition()? wialon.util.DateTime.formatTime((elem.getPosition()).t): "--",
-            speed: elem.getPosition()? elem.getPosition().s: "--",
+            lastMessage: elem.getPosition() ? wialon.util.DateTime.formatTime((elem.getPosition()).t) : "--",
+            speed: elem.getPosition() ? elem.getPosition().s : "--",
             name: elem.getName(),
             icon: elem.getIconUrl(),
             sensors: elem.getSensors(),
-            mileageCounter:elem.getMileageCounter()? elem.getMileageCounter().toLocaleString(): "--",
+            mileageCounter:elem.getMileageCounter() ? elem.getMileageCounter() : "--",
             locationIndex,
             fuelLevel,
             temperatureLevel,

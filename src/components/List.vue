@@ -28,7 +28,7 @@
         <td class="units__table--message">{{object.lastMessage}}</td>
         <td class="units__table--position">{{object.address}}</td>
         <td v-bind:class="getClass(object.speed)">{{object.speed}}</td>
-        <td>{{object.mileageCounter}}</td>
+        <td>{{object.mileageCounter.toLocaleString()}}</td>
         <td>{{object.sensorMileage}}</td>
         <td>{{object.dailyMileage}}</td>
         <td v-bind:class="getClass(object.fuelLevel)">{{object.fuelLevel}}</td>

@@ -33,7 +33,7 @@
     margin-left: -300px;
     margin-top: -220px;
     width: 600px;
-    min-height: 420px;
+    min-height: 470px;
     border: none;
   }
 

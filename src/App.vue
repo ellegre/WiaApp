@@ -1,5 +1,7 @@
 <template>
+
   <div v-if="token" class="general-container">
+    <div ref="background" class="page-main--background" v-on:click="closeInfo"></div>
     <header class="main-header">
       <div class="main-header__container container">
         <img class="main-header__logo" src="./assets/tank_icon.png" width="62" height="62" alt="App logo">
@@ -206,7 +208,7 @@ function getMileageLevel(elem, message) {
       if (mileageLevel === -348201.3876) {
         mileageLevel = "N/A";
       }
-      if (mileageLevel !== "N/A" && mileageLevel !== "N/S" ) {
+      if (typeof mileageLevel == "number") {
         mileageLevel = Math.round(mileageLevel);
       }
     }
@@ -385,19 +387,16 @@ export default {
     },
     logout() {
       wialon.core.Session.getInstance().logout(
-        (code) => { // logout callback
-          if (code) {
-            this.showMessage(code)
-            } else {
-              setTimeout(() => {
-                this.token = null;
-                this.closeMessage();
-              }, 1500);
-            this.user.name = null;
-            this.objects = [];
-            this.stopAutoRefresh();
-            this.showMessage(`Logout successfully`);
-          }
+        (code) => {
+          setTimeout(() => {
+            this.token = null;
+            this.closeMessage();
+          }, 1500);
+        this.user.name = null;
+        this.objects = [];
+        this.component = 'List'
+        this.stopAutoRefresh();
+        this.showMessage(`Logout successfully`);
         }
       )
     },
@@ -427,9 +426,11 @@ export default {
     },
     showInfo() {
       this.info = true;
+      this.$refs.background.style.display = "block";
     },
     closeInfo() {
       this.info = null;
+      this.$refs.background.style.display = "none";
     },
     showObjects(){
       const searchSpec = {
@@ -502,14 +503,15 @@ export default {
                   return this.showMessage(`Error ${code} - ${wialon.core.Errors.getErrorText(code)}`)
                 }
                 const message = data.messages[0];
+                let difference;
                 if (!message) {
                   return;
                 }
                 const previousMileage = getMileageLevel(elem, message);
-                let difference = sensorMileage - previousMileage;
-                  if (difference == NaN) {
-                    return difference == "N/A";
-                  }
+                //console.log("первый километраж", previousMileage, sensorMileage)
+                if (typeof sensorMileage == "number" && typeof  previousMileage == "number") {
+                  difference = sensorMileage - previousMileage;
+                } else difference = "N/A";
 
                 locationPromise.then(() => {
                   const object = this.objects.find(obj => obj.id == elem.getId());
@@ -519,7 +521,7 @@ export default {
                 object.dailyMileage = difference;
               }
             );
-              });
+          });
 
           return {
             id: elem.getId(),
@@ -699,5 +701,15 @@ ul {
 .active {
   text-decoration: underline;
   font-size: 22px;
+}
+
+.page-main--background {
+  display: none;
+  position: absolute;
+  z-index: 15;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0.5;
 }
 </style>

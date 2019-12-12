@@ -3,8 +3,9 @@
     <h1 class="info__title">App Name</h1>
     <p class="info__text">After the first entrance to the application, a list of objects will be displayed in the workspace.
       The list of objects is a table that contains relevant information on the objects. The following parameters are presented:
-       plate number, speed, mileage, daily mileage, current position, fuel level, temperature, ignition state, first time ignition start of the day,
-     current idling time, GPS status, vehicle status. </p>
+       object name, plate number, speed, mileage, daily mileage, current position, fuel level, temperature, ignition state, first time ignition start of the day,
+     current idling time, vehicle status. </p>
+     <p class="info__text">Upon clicking Stats, the charts appear in the work area. They display objects with the highest speed, mileage and temperature and also show the number of objects in motion in relation to the total number of objects.</p>
      <p class="info__text">The information is updated every minute. The beginning of the working day is taken at 8 a.m.</p>
 
     <table class="info__table">
@@ -22,6 +23,14 @@
       <tr>
         <td>N/A</td>
         <td>Invalid value. For example, invalid or nonexistent sensor parameter, invalid math operations etc.</td>
+      </tr>
+      <tr>
+        <td><img src="../assets/arrow-green.png" width="20" alt="Mooving icon"></td>
+        <td>Object status - the object in motion. Calculated accoding the data of the last message.</td>
+      </tr>
+      <tr>
+        <td><img src="../assets/arrow-black.png" width="20" alt="Mooving icon"></td>
+        <td>Object status - the object is not moving. Calculated accoding the data of the last message.</td>
       </tr>
     </table>
     <div class="info__container">
@@ -53,11 +62,12 @@ export default {
   top: 50%;
   left: 50%;
   margin-left: -500px;
-  margin-top: -312px;
+  margin-top: -350px;
   content: "";
   text-align: center;
   box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
   background-color: #fff;
+  z-index: 20;
 }
 
 .info__title {
@@ -133,7 +143,7 @@ export default {
 }
 
 .link__item {
-  color: #078ff0;
+  color: gray;
   text-decoration: none;
   font-size: 12px;
 }
@@ -152,16 +162,20 @@ export default {
   font-size: 18px;
   width: 180px;
   cursor: pointer;
-  background-color: 0099ff;
+  background: rgb(245,245,245) linear-gradient(#f4f4f4, #f1f1f1);
+  transition: all .218s ease 0s;
 }
 
 .popup__close:hover,
 .popup__close:focus {
-  background-color: #D0F5A9;
+  color: rgb(24,24,24);
+  border: 1px solid rgb(198,198,198);
+  background: #f7f7f7 linear-gradient(#f7f7f7, #f1f1f1);
+  box-shadow: 0 1px 2px rgba(0,0,0,.1);
 }
 
 .popup__close:active {
-  background-color: #BEF781;
-  outline: none;
+  background: rgb(238,238,238) linear-gradient(rgb(238,238,238), rgb(224,224,224));
+  box-shadow: 0 1px 2px rgba(0,0,0,.1) inset;
 }
 </style>

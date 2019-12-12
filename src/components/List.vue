@@ -11,7 +11,6 @@
         <th>Position</th>
         <th>Speed, km/h</th>
         <th>Total mileage, km</th>
-        <th>Sensor total mileage</th>
         <th>Daily mileage, km</th>
         <th>Fuel level, l</th>
         <th>Temperature, °C</th>
@@ -29,7 +28,6 @@
         <td class="units__table--position">{{object.address}}</td>
         <td v-bind:class="getClass(object.speed)">{{object.speed}}</td>
         <td>{{object.mileageCounter.toLocaleString()}}</td>
-        <td>{{object.sensorMileage}}</td>
         <td>{{object.dailyMileage}}</td>
         <td v-bind:class="getClass(object.fuelLevel)">{{object.fuelLevel}}</td>
         <td v-bind:class="getClass(object.temperatureLevel)">{{object.temperatureLevel}}</td>

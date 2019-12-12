@@ -2,7 +2,7 @@
   <div  v-if="info" class="info popup">
     <h1 class="info__title">App Name</h1>
     <p class="info__text">After the first entrance to the application, a list of objects will be displayed in the workspace.
-      The list of objects is a table that contains relevant information on the objects. The following parameters are presented:
+      This is a table that contains relevant information on the objects. The following parameters are presented:
        object name, plate number, speed, mileage, daily mileage, current position, fuel level, temperature, ignition state, first time ignition start of the day,
      current idling time, vehicle status. </p>
      <p class="info__text">Upon clicking Stats, the charts appear in the work area. They display objects with the highest speed, mileage and temperature and also show the number of objects in motion in relation to the total number of objects.</p>

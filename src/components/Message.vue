@@ -1,7 +1,7 @@
 <template>
   <div v-if="message" class="message popup">
     <img src="../assets/sponge.png" class="popup__avatar" width="45" height="45" alt="Изображение">
-    <p class="message__text">{{message}}</p>
+    <p class="message__text">{{message}}. Please reload the page.</p>
     <button v-on:click="onClose" type="button" class="popup__close">Close</button>
   </div>
 </template>

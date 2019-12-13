@@ -34,7 +34,7 @@
         <td v-bind:class="getClass(object.engineLevel)">{{object.engineLevel}}</td>
         <td></td>
         <td></td>
-        <td v-bind:class="getMovingState(object.movingState)">
+        <td>
           <img v-if="getSvgSrc(object.movingState)" :src="getSvgSrc(object.movingState)" width="20">
           <span v-else>{{object.movingState}}</span>
         </td>
@@ -71,11 +71,6 @@ export default {
 
       if (value == "N/A" || "N/S") {
         return "gray";
-      }
-    },
-    getMovingState(value) {
-      if (value == "YES") {
-        return "green";
       }
     },
     getSvgSrc(value) {
@@ -135,7 +130,6 @@ export default {
 
 .units__table tr {
   text-align: center;
-
 }
 
 .units__table tr:nth-child(2n) {

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "bootstrap-vue": "^2.0.3",
-    "chart.js": "^2.9.2",
+    "chart.js": "^2.9.4",
     "chartjs-plugin-datalabels": "^0.7.0",
     "vue": "^2.5.11",
     "vue-chartjs": "^3.5.0"
